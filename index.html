@@ -37,7 +37,7 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100%;
-    padding: env(safe-area-inset-top) 0 calc(140px + env(safe-area-inset-bottom));
+    padding: env(safe-area-inset-top) 0 calc(150px + env(safe-area-inset-bottom));
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: contain;
   }
@@ -47,17 +47,29 @@
     align-items: baseline;
     justify-content: space-between;
   }
-  header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+  header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
   #counter { font-size: 15px; color: var(--text2); font-weight: 500; }
 
-  /* Частые покупки */
-  #favWrap { padding: 8px 0 4px; }
-  #favLabel { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; padding: 0 16px 6px; font-weight: 600; }
-  #favs {
-    display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 10px;
+  /* Вкладки */
+  #tabs { display: flex; gap: 6px; padding: 6px 16px 4px; }
+  .tab {
+    flex: 1;
+    border: none; border-radius: 12px;
+    padding: 9px 0;
+    font-size: 15px; font-weight: 600;
+    background: var(--card); color: var(--text2);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .tab.sel { background: var(--accent); color: #fff; }
+
+  /* Частые покупки и сохранённые списки */
+  #favWrap { padding: 8px 0 0; }
+  .sec-label { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; padding: 8px 16px 6px; font-weight: 600; }
+  #favs, #savedRow {
+    display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 8px;
     -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
-  #favs::-webkit-scrollbar { display: none; }
+  #favs::-webkit-scrollbar, #savedRow::-webkit-scrollbar { display: none; }
   .chip {
     flex: 0 0 auto;
     background: var(--card);
@@ -69,9 +81,11 @@
     color: var(--text);
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     transition: transform 0.1s;
+    display: flex; align-items: center; gap: 8px;
   }
   .chip:active { transform: scale(0.94); }
   .chip.added { color: var(--accent); }
+  .chip .chip-x { color: var(--red); font-size: 17px; line-height: 1; opacity: 0.7; }
 
   /* Список */
   main { padding: 4px 16px; }
@@ -113,17 +127,59 @@
     font-size: 22px; padding: 4px 2px; line-height: 1;
     opacity: 0.75;
   }
-  #empty {
-    text-align: center; color: var(--text2); padding: 60px 30px;
+  #empty, .empty {
+    text-align: center; color: var(--text2); padding: 50px 30px;
     font-size: 17px; line-height: 1.5;
   }
-  #empty .emoji { font-size: 52px; display: block; margin-bottom: 12px; }
+  #empty .emoji, .empty .emoji { font-size: 52px; display: block; margin-bottom: 12px; }
 
+  /* Кнопки действий */
+  #actions { display: flex; gap: 8px; padding: 14px 16px 0; }
+  .act-btn {
+    flex: 1;
+    border: none; border-radius: 12px;
+    padding: 12px 8px;
+    font-size: 15px; font-weight: 600;
+    background: var(--card); color: var(--blue);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .act-btn.primary { background: var(--accent); color: #fff; }
+  .act-btn:disabled { opacity: 0.4; }
   #clearDone {
-    display: block; margin: 18px auto 0;
+    display: block; margin: 14px auto 0;
     background: none; border: none; color: var(--blue);
     font-size: 16px; font-weight: 500; padding: 8px 16px;
   }
+
+  /* Статистика */
+  #statsView { display: none; padding: 4px 16px; }
+  .stat-card {
+    background: var(--card); border-radius: 14px;
+    padding: 16px; margin-top: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .stat-month { font-size: 17px; font-weight: 700; margin-bottom: 10px; text-transform: capitalize; }
+  .stat-nums { display: flex; gap: 8px; }
+  .stat-num { flex: 1; text-align: center; }
+  .stat-num b { display: block; font-size: 21px; font-weight: 800; }
+  .stat-num span { font-size: 12px; color: var(--text2); }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 14px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
+  .bar { width: 100%; max-width: 44px; background: var(--accent); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+  .bar-col.cur .bar { background: var(--blue); }
+  .bar-lbl { font-size: 11px; color: var(--text2); }
+  .bar-val { font-size: 11px; color: var(--text2); font-weight: 600; }
+  .trip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; position: relative;
+  }
+  .trip:not(:last-child)::after {
+    content: ""; position: absolute; left: 14px; right: 0; bottom: 0;
+    height: 1px; background: var(--sep);
+  }
+  .trip-date { font-size: 15px; }
+  .trip-info { font-size: 13px; color: var(--text2); }
+  .trip-sum { margin-left: auto; font-size: 16px; font-weight: 700; white-space: nowrap; }
 
   /* Панель добавления */
   #addBar {
@@ -173,6 +229,40 @@
     padding: 7px 11px;
   }
   .cat-btn.sel { background: var(--accent); color: #fff; }
+
+  /* Модалка */
+  #overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 50; padding: 20px;
+  }
+  #overlay.show { display: flex; }
+  #modal {
+    background: var(--card);
+    border-radius: 16px;
+    width: 100%; max-width: 320px;
+    padding: 20px 18px 14px;
+  }
+  #modalTitle { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  #modalSub { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 12px; }
+  #modalInput {
+    width: 100%;
+    font-size: 17px;
+    padding: 11px 14px;
+    border: none; border-radius: 12px;
+    background: var(--bg); color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+  }
+  #modalBtns { display: flex; gap: 8px; }
+  #modalBtns button {
+    flex: 1; border: none; border-radius: 12px;
+    padding: 12px 0; font-size: 16px; font-weight: 600;
+  }
+  #modalCancel { background: var(--bg); color: var(--text); }
+  #modalOk { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -182,12 +272,31 @@
   <span id="counter"></span>
 </header>
 
-<div id="favWrap">
-  <div id="favLabel">Частые покупки</div>
-  <div id="favs"></div>
+<div id="tabs">
+  <button class="tab sel" id="tabList">🛒 Список</button>
+  <button class="tab" id="tabStats">📊 Статистика</button>
 </div>
 
-<main id="list"></main>
+<div id="listView">
+  <div id="actions">
+    <button class="act-btn" id="saveListBtn">💾 Сохранить список</button>
+    <button class="act-btn primary" id="finishBtn">✓ Завершить покупки</button>
+  </div>
+
+  <div id="savedWrap" style="display:none">
+    <div class="sec-label">Мои списки</div>
+    <div id="savedRow"></div>
+  </div>
+
+  <div id="favWrap">
+    <div class="sec-label">Частые покупки</div>
+    <div id="favs"></div>
+  </div>
+
+  <main id="list"></main>
+</div>
+
+<div id="statsView"></div>
 
 <div id="addBar">
   <div id="addRow">
@@ -196,6 +305,18 @@
     <button id="addBtn" aria-label="Добавить">+</button>
   </div>
   <div id="cats"></div>
+</div>
+
+<div id="overlay">
+  <div id="modal">
+    <div id="modalTitle"></div>
+    <div id="modalSub"></div>
+    <input id="modalInput" autocomplete="off">
+    <div id="modalBtns">
+      <button id="modalCancel">Отмена</button>
+      <button id="modalOk">Готово</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -211,7 +332,6 @@ const CATS = [
   { id: "home",   name: "Дом и быт",icon: "🧻" }
 ];
 
-// Автоопределение категории по названию
 const AUTO = {
   fruit:  ["яблок","банан","огурц","огурец","помидор","томат","картош","картоф","лук","морков","капуст","перец","зелень","укроп","петрушк","лимон","апельсин","мандарин","груш","виноград","ягод","клубник","авокадо","чеснок","свекл","кабач","баклажан","салат","грибы","шампиньон"],
   dairy:  ["молок","кефир","творог","сметан","йогурт","сыр","маслян","сливк","ряженк","сливочн"],
@@ -223,15 +343,21 @@ const AUTO = {
   home:   ["бумаг","салфетк","мыло","шампун","зубн","порошок","гель","губк","пакет","фольг","средство","чистящ","туалетн"]
 };
 
+const MONTHS = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+const MONTHS_S = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+
 const KEY = "shoplist_v1";
 let state = load();
 
 function load() {
+  let s = { items: [], history: {}, savedLists: {}, trips: [] };
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) s = Object.assign(s, JSON.parse(raw));
   } catch (e) {}
-  return { items: [], history: {} };
+  s.savedLists = s.savedLists || {};
+  s.trips = s.trips || [];
+  return s;
 }
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
@@ -245,15 +371,13 @@ function guessCat(name) {
   return "other";
 }
 
-let selCat = null; // null = автоопределение
-
+let selCat = null;
 const $ = id => document.getElementById(id);
 
 function addItem(name, qty, cat) {
   name = name.trim();
   if (!name) return;
   const key = name.toLowerCase();
-  // если уже есть невыполненный такой же — не дублируем
   const existing = state.items.find(i => i.name.toLowerCase() === key && !i.done);
   if (existing) {
     if (qty) existing.qty = qty;
@@ -266,7 +390,6 @@ function addItem(name, qty, cat) {
       done: false
     });
   }
-  // история для частых покупок
   const h = state.history[key] || { name, count: 0, cat: cat || guessCat(name), qty: "" };
   h.count++;
   if (qty) h.qty = qty;
@@ -289,16 +412,193 @@ function clearDone() {
 }
 
 function esc(s) {
-  return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function fmtSum(n) {
+  return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 }
 
+/* ---------- Модалка ---------- */
+let modalCb = null;
+function askModal(title, sub, placeholder, inputMode, cb) {
+  $("modalTitle").textContent = title;
+  $("modalSub").textContent = sub;
+  const inp = $("modalInput");
+  inp.value = "";
+  inp.placeholder = placeholder;
+  inp.inputMode = inputMode || "text";
+  modalCb = cb;
+  $("overlay").classList.add("show");
+  setTimeout(() => inp.focus(), 50);
+}
+$("modalCancel").addEventListener("click", () => { $("overlay").classList.remove("show"); modalCb = null; });
+$("modalOk").addEventListener("click", () => {
+  const v = $("modalInput").value.trim();
+  $("overlay").classList.remove("show");
+  if (modalCb) modalCb(v);
+  modalCb = null;
+});
+$("modalInput").addEventListener("keydown", e => { if (e.key === "Enter") $("modalOk").click(); });
+
+/* ---------- Сохранённые списки ---------- */
+$("saveListBtn").addEventListener("click", () => {
+  if (!state.items.length) { askModal("Список пуст", "Сначала добавьте покупки", "", "text", () => {}); return; }
+  askModal("Сохранить список", "Например: «На неделю», «Шашлыки»", "Название списка", "text", name => {
+    if (!name) return;
+    state.savedLists[name] = state.items.map(i => ({ name: i.name, qty: i.qty, cat: i.cat }));
+    save(); render();
+  });
+});
+
+function loadSaved(name) {
+  const list = state.savedLists[name];
+  if (!list) return;
+  for (const it of list) addItem(it.name, it.qty, it.cat);
+}
+
+$("savedRow").addEventListener("click", e => {
+  const x = e.target.closest(".chip-x");
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  const name = chip.dataset.name;
+  if (x) {
+    askModal("Удалить список?", "«" + name + "» — напишите «да» для удаления", "да", "text", v => {
+      if (v.toLowerCase() === "да") { delete state.savedLists[name]; save(); render(); }
+    });
+  } else {
+    loadSaved(name);
+    chip.classList.add("added");
+  }
+});
+
+/* ---------- Завершение покупок ---------- */
+$("finishBtn").addEventListener("click", () => {
+  const bought = state.items.filter(i => i.done);
+  if (!bought.length) {
+    askModal("Нечего завершать", "Сначала отметьте купленные товары галочками", "", "text", () => {});
+    return;
+  }
+  askModal("Сколько потратили?", "Сумма за " + bought.length + " тов. — попадёт в статистику", "Сумма, напр. 2450", "decimal", v => {
+    const sum = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
+    if (isNaN(sum) || sum < 0) return;
+    state.trips.push({
+      date: new Date().toISOString(),
+      sum,
+      items: bought.map(i => i.name)
+    });
+    state.items = state.items.filter(i => !i.done);
+    save(); render();
+    showTab("stats");
+  });
+});
+
+/* ---------- Статистика ---------- */
+function renderStats() {
+  const el = $("statsView");
+  const trips = state.trips.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (!trips.length) {
+    el.innerHTML = `<div class="empty"><span class="emoji">📊</span>Пока нет данных.<br>Отметьте покупки, нажмите<br>«Завершить покупки» и введите сумму.</div>`;
+    return;
+  }
+  const now = new Date();
+  const byMonth = {};
+  for (const t of trips) {
+    const d = new Date(t.date);
+    const k = d.getFullYear() + "-" + d.getMonth();
+    byMonth[k] = byMonth[k] || { sum: 0, count: 0 };
+    byMonth[k].sum += t.sum;
+    byMonth[k].count++;
+  }
+  const curKey = now.getFullYear() + "-" + now.getMonth();
+  const cur = byMonth[curKey] || { sum: 0, count: 0 };
+
+  let html = `<div class="stat-card">
+    <div class="stat-month">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
+    <div class="stat-nums">
+      <div class="stat-num"><b>${fmtSum(cur.sum)} ₽</b><span>потрачено</span></div>
+      <div class="stat-num"><b>${cur.count}</b><span>походов</span></div>
+      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} ₽</b><span>средний чек</span></div>
+    </div>
+  </div>`;
+
+  const cols = [];
+  let max = 0;
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const k = d.getFullYear() + "-" + d.getMonth();
+    const m = byMonth[k] || { sum: 0 };
+    max = Math.max(max, m.sum);
+    cols.push({ lbl: MONTHS_S[d.getMonth()], sum: m.sum, cur: i === 0 });
+  }
+  if (max > 0) {
+    html += `<div class="stat-card"><div class="stat-month" style="font-size:15px">Последние 6 месяцев</div><div class="bars">`;
+    for (const c of cols) {
+      const h = max ? Math.round(c.sum / max * 90) : 0;
+      html += `<div class="bar-col${c.cur ? " cur" : ""}">
+        <div class="bar-val">${c.sum ? fmtSum(c.sum) : ""}</div>
+        <div class="bar" style="height:${h}%"></div>
+        <div class="bar-lbl">${c.lbl}</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  html += `<div class="sec-label" style="padding-left:4px;margin-top:14px">История покупок</div><div class="card">`;
+  for (const t of trips.slice(0, 30)) {
+    const d = new Date(t.date);
+    const ds = d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
+    html += `<div class="trip" data-date="${t.date}">
+      <div>
+        <div class="trip-date">${ds}</div>
+        <div class="trip-info">${t.items.length} тов.: ${esc(t.items.slice(0, 3).join(", "))}${t.items.length > 3 ? "…" : ""}</div>
+      </div>
+      <span class="trip-sum">${fmtSum(t.sum)} ₽</span>
+      <button class="del" aria-label="Удалить">×</button>
+    </div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+$("statsView").addEventListener("click", e => {
+  if (!e.target.closest(".del")) return;
+  const row = e.target.closest(".trip");
+  if (!row) return;
+  askModal("Удалить запись?", "Напишите «да» для удаления", "да", "text", v => {
+    if (v.toLowerCase() === "да") {
+      state.trips = state.trips.filter(t => t.date !== row.dataset.date);
+      save(); renderStats();
+    }
+  });
+});
+
+/* ---------- Вкладки ---------- */
+function showTab(which) {
+  const isList = which === "list";
+  $("listView").style.display = isList ? "" : "none";
+  $("addBar").style.display = isList ? "" : "none";
+  $("statsView").style.display = isList ? "none" : "";
+  $("tabList").classList.toggle("sel", isList);
+  $("tabStats").classList.toggle("sel", !isList);
+  if (!isList) renderStats();
+}
+$("tabList").addEventListener("click", () => showTab("list"));
+$("tabStats").addEventListener("click", () => showTab("stats"));
+
+/* ---------- Рендер списка ---------- */
 function render() {
-  // счётчик
   const total = state.items.length;
   const left = state.items.filter(i => !i.done).length;
   $("counter").textContent = total ? (left ? "осталось: " + left : "всё куплено ✓") : "";
 
-  // частые покупки: топ-10 по количеству добавлений, которых нет в активном списке
+  $("finishBtn").disabled = !state.items.some(i => i.done);
+
+  const names = Object.keys(state.savedLists);
+  $("savedWrap").style.display = names.length ? "" : "none";
+  $("savedRow").innerHTML = names.map(n =>
+    `<button class="chip" data-name="${esc(n)}">📋 ${esc(n)} <span class="chip-x">×</span></button>`
+  ).join("");
+
   const activeNames = new Set(state.items.filter(i => !i.done).map(i => i.name.toLowerCase()));
   const favs = Object.values(state.history)
     .filter(h => h.count >= 2 && !activeNames.has(h.name.toLowerCase()))
@@ -309,7 +609,6 @@ function render() {
     `<button class="chip" data-name="${esc(h.name)}" data-qty="${esc(h.qty)}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`
   ).join("");
 
-  // список по категориям
   const listEl = $("list");
   if (!total) {
     listEl.innerHTML = `<div id="empty"><span class="emoji">🛒</span>Список пуст.<br>Добавьте первую покупку ниже.</div>`;
@@ -332,7 +631,7 @@ function render() {
     html += `</div>`;
   }
   const doneCount = state.items.filter(i => i.done).length;
-  if (doneCount) html += `<button id="clearDone">Убрать купленное (${doneCount})</button>`;
+  if (doneCount) html += `<button id="clearDone">Убрать купленное без учёта (${doneCount})</button>`;
   listEl.innerHTML = html;
 }
 
@@ -344,7 +643,6 @@ function renderCats() {
     ).join("");
 }
 
-// события
 $("addBtn").addEventListener("click", doAdd);
 $("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
 $("qtyInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
@@ -374,8 +672,8 @@ $("favs").addEventListener("click", e => {
 });
 
 $("list").addEventListener("click", e => {
-  const row = e.target.closest(".item");
   if (e.target.closest("#clearDone")) { clearDone(); return; }
+  const row = e.target.closest(".item");
   if (!row) return;
   const id = parseFloat(row.dataset.id);
   if (e.target.closest(".del")) remove(id);
