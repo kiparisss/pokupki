@@ -122,6 +122,7 @@
     background: var(--bg); border-radius: 8px; padding: 3px 8px;
     border: none; white-space: nowrap;
   }
+  .price { color: var(--accent); font-weight: 600; }
   .del {
     background: none; border: none; color: var(--red);
     font-size: 22px; padding: 4px 2px; line-height: 1;
@@ -264,6 +265,38 @@
   }
   #modalCancel { background: var(--bg); color: var(--text); }
   #modalOk { background: var(--accent); color: #fff; }
+
+  /* Детали покупки */
+  #tripOverlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: flex-end; justify-content: center;
+    z-index: 60;
+  }
+  #tripOverlay.show { display: flex; }
+  #tripCard {
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 560px;
+    max-height: 80%;
+    overflow-y: auto;
+    padding: 18px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+  #tripHead { display: flex; justify-content: space-between; align-items: center; }
+  #tripTitle { font-size: 18px; font-weight: 800; }
+  #tripClose {
+    border: none; background: var(--bg); color: var(--text2);
+    border-radius: 50%; width: 30px; height: 30px; font-size: 16px; line-height: 1;
+  }
+  #tripTotal { font-size: 14px; color: var(--text2); margin: 4px 0 12px; }
+  .tr-item {
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 10px 0; font-size: 15px;
+    border-bottom: 1px solid var(--sep);
+  }
+  .tr-item:last-child { border-bottom: none; }
+  .tr-item .tr-price { color: var(--text2); white-space: nowrap; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -306,6 +339,17 @@
     <button id="addBtn" aria-label="Добавить">+</button>
   </div>
   <div id="cats"></div>
+</div>
+
+<div id="tripOverlay">
+  <div id="tripCard">
+    <div id="tripHead">
+      <div id="tripTitle"></div>
+      <button id="tripClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div id="tripTotal"></div>
+    <div id="tripItems"></div>
+  </div>
 </div>
 
 <div id="overlay">
@@ -401,7 +445,17 @@ function addItem(name, qty, cat) {
 
 function toggle(id) {
   const it = state.items.find(i => i.id === id);
-  if (it) { it.done = !it.done; save(); render(); }
+  if (!it) return;
+  it.done = !it.done;
+  save(); render();
+  if (it.done && it.price == null) askPrice(it);
+}
+
+function askPrice(it) {
+  askModal("Сколько стоил товар?", "«" + it.name + "» — цена в леях (можно отменить и вписать позже)", "Цена, лей", "decimal", v => {
+    const p = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
+    if (!isNaN(p) && p >= 0) { it.price = p; save(); render(); }
+  }, it.price != null ? it.price : "");
 }
 function remove(id) {
   state.items = state.items.filter(i => i.id !== id);
@@ -419,31 +473,38 @@ function fmtSum(n) {
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 }
 
-/* ---------- Курс евро ---------- */
-let eurRate = parseFloat(localStorage.getItem("eur_uah_rate")) || 48.5; // запасной курс
+/* ---------- Курсы валют (базовая — лей, RON) ---------- */
+let rates = { EUR: 0.197, UAH: 9.7 }; // запасные курсы
+try {
+  const r = JSON.parse(localStorage.getItem("ron_rates"));
+  if (r && r.EUR && r.UAH) rates = r;
+} catch (e) {}
 if (typeof fetch === "function") {
-  fetch("https://open.er-api.com/v6/latest/EUR")
+  fetch("https://open.er-api.com/v6/latest/RON")
     .then(r => r.json())
     .then(d => {
-      if (d && d.rates && d.rates.UAH) {
-        eurRate = d.rates.UAH;
-        try { localStorage.setItem("eur_uah_rate", eurRate); } catch (e) {}
+      if (d && d.rates && d.rates.EUR && d.rates.UAH) {
+        rates = { EUR: d.rates.EUR, UAH: d.rates.UAH };
+        try { localStorage.setItem("ron_rates", JSON.stringify(rates)); } catch (e) {}
         if ($("statsView").style.display === "block") renderStats();
       }
     })
     .catch(() => {});
 }
 function eur(n) {
-  return (n / eurRate).toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+  return (n * rates.EUR).toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+}
+function uah(n) {
+  return (n * rates.UAH).toLocaleString("ru-RU", { maximumFractionDigits: 0 });
 }
 
 /* ---------- Модалка ---------- */
 let modalCb = null;
-function askModal(title, sub, placeholder, inputMode, cb) {
+function askModal(title, sub, placeholder, inputMode, cb, preset) {
   $("modalTitle").textContent = title;
   $("modalSub").textContent = sub;
   const inp = $("modalInput");
-  inp.value = "";
+  inp.value = preset != null ? String(preset) : "";
   inp.placeholder = placeholder;
   inp.inputMode = inputMode || "text";
   modalCb = cb;
@@ -497,18 +558,22 @@ $("finishBtn").addEventListener("click", () => {
     askModal("Нечего завершать", "Сначала отметьте купленные товары галочками", "", "text", () => {});
     return;
   }
-  askModal("Сколько потратили?", "Сумма в грн за " + bought.length + " тов. — попадёт в статистику", "Сумма, напр. 2450", "decimal", v => {
+  const total = bought.reduce((s, i) => s + (i.price || 0), 0);
+  const noPrice = bought.filter(i => i.price == null).length;
+  askModal("Итог покупки, лей", noPrice
+    ? "Посчитано по ценам, но у " + noPrice + " тов. цены нет — проверьте сумму"
+    : "Сумма за " + bought.length + " тов. — можно исправить", "Сумма, лей", "decimal", v => {
     const sum = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
     if (isNaN(sum) || sum < 0) return;
     state.trips.push({
       date: new Date().toISOString(),
       sum,
-      items: bought.map(i => i.name)
+      items: bought.map(i => ({ name: i.name, qty: i.qty, price: i.price != null ? i.price : null }))
     });
     state.items = state.items.filter(i => !i.done);
     save(); render();
     showTab("stats");
-  });
+  }, total ? +total.toFixed(2) : "");
 });
 
 /* ---------- Статистика ---------- */
@@ -534,9 +599,9 @@ function renderStats() {
   let html = `<div class="stat-card">
     <div class="stat-month">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
     <div class="stat-nums">
-      <div class="stat-num"><b>${fmtSum(cur.sum)} грн</b><span>потрачено (≈${eur(cur.sum)} €)</span></div>
+      <div class="stat-num"><b>${fmtSum(cur.sum)} лей</b><span>потрачено<br>≈${eur(cur.sum)} € · ${uah(cur.sum)} грн</span></div>
       <div class="stat-num"><b>${cur.count}</b><span>походов</span></div>
-      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} грн</b><span>средний чек (≈${cur.count ? eur(cur.sum / cur.count) : 0} €)</span></div>
+      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} лей</b><span>средний чек<br>≈${cur.count ? eur(cur.sum / cur.count) : 0} € · ${cur.count ? uah(cur.sum / cur.count) : 0} грн</span></div>
     </div>
   </div>`;
 
@@ -566,12 +631,13 @@ function renderStats() {
   for (const t of trips.slice(0, 30)) {
     const d = new Date(t.date);
     const ds = d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
+    const names = t.items.map(it => typeof it === "string" ? it : it.name);
     html += `<div class="trip" data-date="${t.date}">
       <div>
         <div class="trip-date">${ds}</div>
-        <div class="trip-info">${t.items.length} тов.: ${esc(t.items.slice(0, 3).join(", "))}${t.items.length > 3 ? "…" : ""}</div>
+        <div class="trip-info">${names.length} тов.: ${esc(names.slice(0, 3).join(", "))}${names.length > 3 ? "…" : ""}</div>
       </div>
-      <span class="trip-sum">${fmtSum(t.sum)} грн<div class="trip-eur">≈${eur(t.sum)} €</div></span>
+      <span class="trip-sum">${fmtSum(t.sum)} лей<div class="trip-eur">≈${eur(t.sum)} € · ${uah(t.sum)} грн</div></span>
       <button class="del" aria-label="Удалить">×</button>
     </div>`;
   }
@@ -580,15 +646,37 @@ function renderStats() {
 }
 
 $("statsView").addEventListener("click", e => {
-  if (!e.target.closest(".del")) return;
   const row = e.target.closest(".trip");
   if (!row) return;
-  askModal("Удалить запись?", "Напишите «да» для удаления", "да", "text", v => {
-    if (v.toLowerCase() === "да") {
-      state.trips = state.trips.filter(t => t.date !== row.dataset.date);
-      save(); renderStats();
-    }
-  });
+  if (e.target.closest(".del")) {
+    askModal("Удалить запись?", "Напишите «да» для удаления", "да", "text", v => {
+      if (v.toLowerCase() === "да") {
+        state.trips = state.trips.filter(t => t.date !== row.dataset.date);
+        save(); renderStats();
+      }
+    });
+    return;
+  }
+  const trip = state.trips.find(t => t.date === row.dataset.date);
+  if (trip) showTrip(trip);
+});
+
+/* ---------- Детали покупки ---------- */
+function showTrip(t) {
+  const d = new Date(t.date);
+  $("tripTitle").textContent = "Покупка " + d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
+  $("tripTotal").textContent = fmtSum(t.sum) + " лей · ≈" + eur(t.sum) + " € · " + uah(t.sum) + " грн";
+  $("tripItems").innerHTML = t.items.map(it => {
+    const name = typeof it === "string" ? it : it.name;
+    const qty = (typeof it === "object" && it.qty) ? " · " + it.qty : "";
+    const pr = (typeof it === "object" && it.price != null) ? fmtSum(it.price) + " лей" : "—";
+    return `<div class="tr-item"><span>${esc(name)}${esc(qty)}</span><span class="tr-price">${pr}</span></div>`;
+  }).join("");
+  $("tripOverlay").classList.add("show");
+}
+$("tripClose").addEventListener("click", () => $("tripOverlay").classList.remove("show"));
+$("tripOverlay").addEventListener("click", e => {
+  if (e.target === $("tripOverlay")) $("tripOverlay").classList.remove("show");
 });
 
 /* ---------- Вкладки ---------- */
@@ -610,7 +698,10 @@ function render() {
   const left = state.items.filter(i => !i.done).length;
   $("counter").textContent = total ? (left ? "осталось: " + left : "всё куплено ✓") : "";
 
-  $("finishBtn").disabled = !state.items.some(i => i.done);
+  const doneItems = state.items.filter(i => i.done);
+  $("finishBtn").disabled = !doneItems.length;
+  const runTotal = doneItems.reduce((s, i) => s + (i.price || 0), 0);
+  $("finishBtn").textContent = runTotal ? "✓ Завершить · " + fmtSum(runTotal) + " лей" : "✓ Завершить покупки";
 
   const names = Object.keys(state.savedLists);
   $("savedWrap").style.display = names.length ? "" : "none";
@@ -644,6 +735,7 @@ function render() {
         <button class="check" aria-label="Отметить">${i.done ? "✓" : ""}</button>
         <span class="item-name">${esc(i.name)}</span>
         ${i.qty ? `<span class="qty">${esc(i.qty)}</span>` : ""}
+        ${i.price != null ? `<button class="qty price">${fmtSum(i.price)} лей</button>` : (i.done ? `<button class="qty price">цена?</button>` : "")}
         <button class="del" aria-label="Удалить">×</button>
       </div>`;
     }
@@ -695,8 +787,13 @@ $("list").addEventListener("click", e => {
   const row = e.target.closest(".item");
   if (!row) return;
   const id = parseFloat(row.dataset.id);
-  if (e.target.closest(".del")) remove(id);
-  else toggle(id);
+  if (e.target.closest(".del")) { remove(id); return; }
+  if (e.target.closest(".price")) {
+    const it = state.items.find(i => i.id === id);
+    if (it) askPrice(it);
+    return;
+  }
+  toggle(id);
 });
 
 renderCats();
