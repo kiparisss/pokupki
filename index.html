@@ -577,7 +577,7 @@ function showTab(which) {
   const isList = which === "list";
   $("listView").style.display = isList ? "" : "none";
   $("addBar").style.display = isList ? "" : "none";
-  $("statsView").style.display = isList ? "none" : "";
+  $("statsView").style.display = isList ? "none" : "block";
   $("tabList").classList.toggle("sel", isList);
   $("tabStats").classList.toggle("sel", !isList);
   if (!isList) renderStats();
