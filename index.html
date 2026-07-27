@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Покупки">
+<meta name="theme-color" content="#f2f2f7">
+<title>Список покупок</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%2334c759'/%3E%3Ctext x='90' y='118' font-size='90' text-anchor='middle'%3E🛒%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --card: #ffffff;
+    --text: #1c1c1e;
+    --text2: #8e8e93;
+    --accent: #34c759;
+    --blue: #007aff;
+    --red: #ff3b30;
+    --sep: rgba(60,60,67,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card: #1c1c1e;
+      --text: #ffffff;
+      --text2: #98989f;
+      --sep: rgba(84,84,88,0.5);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    padding: env(safe-area-inset-top) 0 calc(140px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+  header {
+    padding: 18px 16px 6px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+  #counter { font-size: 15px; color: var(--text2); font-weight: 500; }
+
+  /* Частые покупки */
+  #favWrap { padding: 8px 0 4px; }
+  #favLabel { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; padding: 0 16px 6px; font-weight: 600; }
+  #favs {
+    display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 10px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  #favs::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto;
+    background: var(--card);
+    border: none;
+    border-radius: 18px;
+    padding: 9px 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    transition: transform 0.1s;
+  }
+  .chip:active { transform: scale(0.94); }
+  .chip.added { color: var(--accent); }
+
+  /* Список */
+  main { padding: 4px 16px; }
+  .cat-title {
+    font-size: 13px; font-weight: 700; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    padding: 16px 4px 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 14px;
+    position: relative;
+  }
+  .item:not(:last-child)::after {
+    content: ""; position: absolute; left: 48px; right: 0; bottom: 0;
+    height: 1px; background: var(--sep);
+  }
+  .check {
+    width: 26px; height: 26px; flex: 0 0 26px;
+    border: 2px solid var(--text2);
+    border-radius: 50%;
+    background: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; color: #fff;
+    transition: all 0.15s;
+  }
+  .item.done .check { background: var(--accent); border-color: var(--accent); }
+  .item-name { flex: 1; font-size: 17px; min-width: 0; overflow-wrap: break-word; }
+  .item.done .item-name { color: var(--text2); text-decoration: line-through; }
+  .qty {
+    font-size: 15px; color: var(--text2); font-weight: 500;
+    background: var(--bg); border-radius: 8px; padding: 3px 8px;
+    border: none; white-space: nowrap;
+  }
+  .del {
+    background: none; border: none; color: var(--red);
+    font-size: 22px; padding: 4px 2px; line-height: 1;
+    opacity: 0.75;
+  }
+  #empty {
+    text-align: center; color: var(--text2); padding: 60px 30px;
+    font-size: 17px; line-height: 1.5;
+  }
+  #empty .emoji { font-size: 52px; display: block; margin-bottom: 12px; }
+
+  #clearDone {
+    display: block; margin: 18px auto 0;
+    background: none; border: none; color: var(--blue);
+    font-size: 16px; font-weight: 500; padding: 8px 16px;
+  }
+
+  /* Панель добавления */
+  #addBar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: var(--card);
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    box-shadow: 0 -1px 0 var(--sep), 0 -6px 20px rgba(0,0,0,0.06);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  #addRow { display: flex; gap: 8px; }
+  #nameInput {
+    flex: 1; min-width: 0;
+    font-size: 17px;
+    padding: 11px 14px;
+    border: none; border-radius: 12px;
+    background: var(--bg); color: var(--text);
+    outline: none;
+  }
+  #qtyInput {
+    width: 84px;
+    font-size: 16px;
+    padding: 11px 10px;
+    border: none; border-radius: 12px;
+    background: var(--bg); color: var(--text);
+    outline: none;
+  }
+  #nameInput::placeholder, #qtyInput::placeholder { color: var(--text2); }
+  #addBtn {
+    flex: 0 0 46px; height: 46px;
+    border: none; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 26px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.1s;
+  }
+  #addBtn:active { transform: scale(0.9); }
+  #cats {
+    display: flex; gap: 6px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  #cats::-webkit-scrollbar { display: none; }
+  .cat-btn {
+    flex: 0 0 auto;
+    border: none; border-radius: 14px;
+    background: var(--bg); color: var(--text2);
+    font-size: 13px; font-weight: 600;
+    padding: 7px 11px;
+  }
+  .cat-btn.sel { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Покупки</h1>
+  <span id="counter"></span>
+</header>
+
+<div id="favWrap">
+  <div id="favLabel">Частые покупки</div>
+  <div id="favs"></div>
+</div>
+
+<main id="list"></main>
+
+<div id="addBar">
+  <div id="addRow">
+    <input id="nameInput" type="text" placeholder="Что купить?" autocomplete="off" enterkeyhint="done">
+    <input id="qtyInput" type="text" placeholder="Кол-во" autocomplete="off">
+    <button id="addBtn" aria-label="Добавить">+</button>
+  </div>
+  <div id="cats"></div>
+</div>
+
+<script>
+const CATS = [
+  { id: "other",  name: "Разное",   icon: "🛍️" },
+  { id: "fruit",  name: "Овощи и фрукты", icon: "🥦" },
+  { id: "dairy",  name: "Молочное", icon: "🥛" },
+  { id: "meat",   name: "Мясо и рыба", icon: "🍗" },
+  { id: "bakery", name: "Хлеб",     icon: "🍞" },
+  { id: "grocery",name: "Бакалея",  icon: "🍝" },
+  { id: "frozen", name: "Заморозка",icon: "🧊" },
+  { id: "drinks", name: "Напитки",  icon: "🧃" },
+  { id: "home",   name: "Дом и быт",icon: "🧻" }
+];
+
+// Автоопределение категории по названию
+const AUTO = {
+  fruit:  ["яблок","банан","огурц","огурец","помидор","томат","картош","картоф","лук","морков","капуст","перец","зелень","укроп","петрушк","лимон","апельсин","мандарин","груш","виноград","ягод","клубник","авокадо","чеснок","свекл","кабач","баклажан","салат","грибы","шампиньон"],
+  dairy:  ["молок","кефир","творог","сметан","йогурт","сыр","маслян","сливк","ряженк","сливочн"],
+  meat:   ["куриц","курин","мясо","говядин","свинин","фарш","рыб","лосос","сельд","колбас","сосиск","ветчин","бекон","индейк","котлет","креветк"],
+  bakery: ["хлеб","батон","булк","лаваш","багет","выпечк","круассан","пирож"],
+  grocery:["макарон","рис","гречк","мука","сахар","соль","масло растит","подсолнечн","оливков","крупа","овсянк","чай","кофе","яйц","яиц","консерв","томатн паст","специи","печень","шоколад","конфет"],
+  frozen: ["пельмен","мороженое","заморож","вареник"],
+  drinks: ["вода","сок","газиров","лимонад","квас","пиво","вино","минералк","кола"],
+  home:   ["бумаг","салфетк","мыло","шампун","зубн","порошок","гель","губк","пакет","фольг","средство","чистящ","туалетн"]
+};
+
+const KEY = "shoplist_v1";
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { items: [], history: {} };
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function guessCat(name) {
+  const n = name.toLowerCase();
+  for (const cat in AUTO) {
+    if (AUTO[cat].some(w => n.includes(w))) return cat;
+  }
+  return "other";
+}
+
+let selCat = null; // null = автоопределение
+
+const $ = id => document.getElementById(id);
+
+function addItem(name, qty, cat) {
+  name = name.trim();
+  if (!name) return;
+  const key = name.toLowerCase();
+  // если уже есть невыполненный такой же — не дублируем
+  const existing = state.items.find(i => i.name.toLowerCase() === key && !i.done);
+  if (existing) {
+    if (qty) existing.qty = qty;
+  } else {
+    state.items.push({
+      id: Date.now() + Math.random(),
+      name,
+      qty: qty || "",
+      cat: cat || guessCat(name),
+      done: false
+    });
+  }
+  // история для частых покупок
+  const h = state.history[key] || { name, count: 0, cat: cat || guessCat(name), qty: "" };
+  h.count++;
+  if (qty) h.qty = qty;
+  state.history[key] = h;
+  save();
+  render();
+}
+
+function toggle(id) {
+  const it = state.items.find(i => i.id === id);
+  if (it) { it.done = !it.done; save(); render(); }
+}
+function remove(id) {
+  state.items = state.items.filter(i => i.id !== id);
+  save(); render();
+}
+function clearDone() {
+  state.items = state.items.filter(i => !i.done);
+  save(); render();
+}
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+function render() {
+  // счётчик
+  const total = state.items.length;
+  const left = state.items.filter(i => !i.done).length;
+  $("counter").textContent = total ? (left ? "осталось: " + left : "всё куплено ✓") : "";
+
+  // частые покупки: топ-10 по количеству добавлений, которых нет в активном списке
+  const activeNames = new Set(state.items.filter(i => !i.done).map(i => i.name.toLowerCase()));
+  const favs = Object.values(state.history)
+    .filter(h => h.count >= 2 && !activeNames.has(h.name.toLowerCase()))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+  $("favWrap").style.display = favs.length ? "" : "none";
+  $("favs").innerHTML = favs.map(h =>
+    `<button class="chip" data-name="${esc(h.name)}" data-qty="${esc(h.qty)}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`
+  ).join("");
+
+  // список по категориям
+  const listEl = $("list");
+  if (!total) {
+    listEl.innerHTML = `<div id="empty"><span class="emoji">🛒</span>Список пуст.<br>Добавьте первую покупку ниже.</div>`;
+    return;
+  }
+  let html = "";
+  for (const cat of CATS) {
+    const items = state.items.filter(i => i.cat === cat.id);
+    if (!items.length) continue;
+    items.sort((a, b) => a.done - b.done);
+    html += `<div class="cat-title">${cat.icon} ${cat.name}</div><div class="card">`;
+    for (const i of items) {
+      html += `<div class="item${i.done ? " done" : ""}" data-id="${i.id}">
+        <button class="check" aria-label="Отметить">${i.done ? "✓" : ""}</button>
+        <span class="item-name">${esc(i.name)}</span>
+        ${i.qty ? `<span class="qty">${esc(i.qty)}</span>` : ""}
+        <button class="del" aria-label="Удалить">×</button>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  const doneCount = state.items.filter(i => i.done).length;
+  if (doneCount) html += `<button id="clearDone">Убрать купленное (${doneCount})</button>`;
+  listEl.innerHTML = html;
+}
+
+function renderCats() {
+  $("cats").innerHTML =
+    `<button class="cat-btn${selCat === null ? " sel" : ""}" data-cat="">✨ Авто</button>` +
+    CATS.map(c =>
+      `<button class="cat-btn${selCat === c.id ? " sel" : ""}" data-cat="${c.id}">${c.icon} ${c.name}</button>`
+    ).join("");
+}
+
+// события
+$("addBtn").addEventListener("click", doAdd);
+$("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+$("qtyInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+
+function doAdd() {
+  const name = $("nameInput").value;
+  const qty = $("qtyInput").value.trim();
+  if (!name.trim()) { $("nameInput").focus(); return; }
+  addItem(name, qty, selCat);
+  $("nameInput").value = "";
+  $("qtyInput").value = "";
+  $("nameInput").focus();
+}
+
+$("cats").addEventListener("click", e => {
+  const b = e.target.closest(".cat-btn");
+  if (!b) return;
+  selCat = b.dataset.cat || null;
+  renderCats();
+});
+
+$("favs").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  addItem(b.dataset.name, b.dataset.qty, b.dataset.cat);
+  b.classList.add("added");
+});
+
+$("list").addEventListener("click", e => {
+  const row = e.target.closest(".item");
+  if (e.target.closest("#clearDone")) { clearDone(); return; }
+  if (!row) return;
+  const id = parseFloat(row.dataset.id);
+  if (e.target.closest(".del")) remove(id);
+  else toggle(id);
+});
+
+renderCats();
+render();
+</script>
+</body>
+</html>
