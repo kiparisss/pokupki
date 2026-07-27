@@ -179,7 +179,8 @@
   }
   .trip-date { font-size: 15px; }
   .trip-info { font-size: 13px; color: var(--text2); }
-  .trip-sum { margin-left: auto; font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .trip-sum { margin-left: auto; font-size: 16px; font-weight: 700; white-space: nowrap; text-align: right; }
+  .trip-eur { font-size: 11px; color: var(--text2); font-weight: 500; }
 
   /* Панель добавления */
   #addBar {
@@ -418,6 +419,24 @@ function fmtSum(n) {
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 }
 
+/* ---------- Курс евро ---------- */
+let eurRate = parseFloat(localStorage.getItem("eur_uah_rate")) || 48.5; // запасной курс
+if (typeof fetch === "function") {
+  fetch("https://open.er-api.com/v6/latest/EUR")
+    .then(r => r.json())
+    .then(d => {
+      if (d && d.rates && d.rates.UAH) {
+        eurRate = d.rates.UAH;
+        try { localStorage.setItem("eur_uah_rate", eurRate); } catch (e) {}
+        if ($("statsView").style.display === "block") renderStats();
+      }
+    })
+    .catch(() => {});
+}
+function eur(n) {
+  return (n / eurRate).toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+}
+
 /* ---------- Модалка ---------- */
 let modalCb = null;
 function askModal(title, sub, placeholder, inputMode, cb) {
@@ -478,7 +497,7 @@ $("finishBtn").addEventListener("click", () => {
     askModal("Нечего завершать", "Сначала отметьте купленные товары галочками", "", "text", () => {});
     return;
   }
-  askModal("Сколько потратили?", "Сумма за " + bought.length + " тов. — попадёт в статистику", "Сумма, напр. 2450", "decimal", v => {
+  askModal("Сколько потратили?", "Сумма в грн за " + bought.length + " тов. — попадёт в статистику", "Сумма, напр. 2450", "decimal", v => {
     const sum = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
     if (isNaN(sum) || sum < 0) return;
     state.trips.push({
@@ -515,9 +534,9 @@ function renderStats() {
   let html = `<div class="stat-card">
     <div class="stat-month">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
     <div class="stat-nums">
-      <div class="stat-num"><b>${fmtSum(cur.sum)} ₽</b><span>потрачено</span></div>
+      <div class="stat-num"><b>${fmtSum(cur.sum)} грн</b><span>потрачено (≈${eur(cur.sum)} €)</span></div>
       <div class="stat-num"><b>${cur.count}</b><span>походов</span></div>
-      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} ₽</b><span>средний чек</span></div>
+      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} грн</b><span>средний чек (≈${cur.count ? eur(cur.sum / cur.count) : 0} €)</span></div>
     </div>
   </div>`;
 
@@ -552,7 +571,7 @@ function renderStats() {
         <div class="trip-date">${ds}</div>
         <div class="trip-info">${t.items.length} тов.: ${esc(t.items.slice(0, 3).join(", "))}${t.items.length > 3 ? "…" : ""}</div>
       </div>
-      <span class="trip-sum">${fmtSum(t.sum)} ₽</span>
+      <span class="trip-sum">${fmtSum(t.sum)} грн<div class="trip-eur">≈${eur(t.sum)} €</div></span>
       <button class="del" aria-label="Удалить">×</button>
     </div>`;
   }
