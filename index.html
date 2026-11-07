@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -261,7 +261,7 @@
   #toast button { border: none; background: none; color: var(--on-acc); font-size: 14px; font-weight: 700; padding: 0; }
   #toast span { overflow: hidden; text-overflow: ellipsis; }
 
-  /* Мои списки */
+  /* Мої списки */
   .btn-line {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     width: calc(100% - 40px); margin: 16px 20px 0; height: 50px;
@@ -313,7 +313,7 @@
 
 <div id="dock">
   <button id="finishBtn"></button>
-  <button id="fab" aria-label="Добавить товар"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button id="fab" aria-label="Додати товар"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 
 <nav id="tabbar">
@@ -323,7 +323,7 @@
   </button>
   <button class="tb" data-tab="saved">
     <svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
-    Мои списки
+    Мої списки
   </button>
   <button class="tb" data-tab="stats">
     <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>
@@ -336,18 +336,18 @@
 <div class="sheet" id="addSheet">
   <div class="grab"></div>
   <div class="f-row">
-    <input class="field" id="nameInput" type="text" placeholder="Что купить?" autocomplete="off" enterkeyhint="done">
-    <input class="field qty" id="qtyInput" type="text" placeholder="Кол-во" autocomplete="off" enterkeyhint="done">
+    <input class="field" id="nameInput" type="text" placeholder="Що купити?" autocomplete="off" enterkeyhint="done">
+    <input class="field qty" id="qtyInput" type="text" placeholder="К-сть" autocomplete="off" enterkeyhint="done">
   </div>
-  <div class="s-label">Категория</div>
+  <div class="s-label">Категорія</div>
   <div class="chips s-chips" id="cats"></div>
   <div id="favBlock">
-    <div class="s-label">Часто покупаете</div>
+    <div class="s-label">Часто купуєте</div>
     <div class="chips s-chips" id="favs"></div>
   </div>
   <div class="actions">
     <button class="btn ghost" id="addClose">Готово</button>
-    <button class="btn primary" id="addBtn">Добавить</button>
+    <button class="btn primary" id="addBtn">Додати</button>
   </div>
 </div>
 
@@ -368,7 +368,7 @@
     <div id="dlgSub"></div>
     <input class="field" id="dlgInput" autocomplete="off">
     <div class="actions">
-      <button class="btn ghost" id="dlgCancel">Отмена</button>
+      <button class="btn ghost" id="dlgCancel">Скасувати</button>
       <button class="btn primary" id="dlgOk">Готово</button>
     </div>
   </div>
@@ -378,15 +378,15 @@
 
 <script>
 const CATS = [
-  { id: "fruit",  name: "Овощи и фрукты" },
-  { id: "dairy",  name: "Молочное" },
-  { id: "meat",   name: "Мясо и рыба" },
-  { id: "bakery", name: "Хлеб" },
-  { id: "grocery",name: "Бакалея" },
-  { id: "frozen", name: "Заморозка" },
-  { id: "drinks", name: "Напитки" },
-  { id: "home",   name: "Дом и быт" },
-  { id: "other",  name: "Разное" }
+  { id: "fruit",  name: "Овочі та фрукти" },
+  { id: "dairy",  name: "Молочне" },
+  { id: "meat",   name: "М'ясо та риба" },
+  { id: "bakery", name: "Хліб" },
+  { id: "grocery",name: "Бакалія" },
+  { id: "frozen", name: "Заморожене" },
+  { id: "drinks", name: "Напої" },
+  { id: "home",   name: "Дім і побут" },
+  { id: "other",  name: "Різне" }
 ];
 
 const AUTO = {
@@ -400,8 +400,20 @@ const AUTO = {
   home:   ["бумаг","салфетк","мыло","шампун","зубн","порошок","гель","губк","пакет","фольг","средство","чистящ","туалетн"]
 };
 
-const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-const MONTHS_S = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const AUTO_UK = {
+  fruit:  ["яблук","огір","огірк","помідор","картопл","цибул","морк","кріп","петрушк","лимон","апельсин","мандарин","груш","виноград","ягід","ягод","полуниц","авокадо","часник","буряк","кабачк","баклажан","салат","гриб","печериц"],
+  dairy:  ["молок","кефір","сир","сметан","йогурт","вершк","ряжанк","масло вершк"],
+  meat:   ["курк","курят","курин","м'яс","мяс","яловичин","свинин","фарш","риб","лосос","оселед","ковбас","сосиск","шинк","бекон","індич","індик","котлет","кревет"],
+  bakery: ["хліб","батон","булк","лаваш","багет","круасан","пиріж","випічк"],
+  grocery:["макарон","рис","гречк","борошн","цукор","цукр","сіль","олія","крупа","вівсян","чай","кава","яйц","яєць","консерв","спеці","печив","шоколад","цукерк"],
+  frozen: ["пельмен","морозив","заморож","вареник"],
+  drinks: ["вода","сік","газован","лимонад","квас","пиво","вино","мінералк","кола"],
+  home:   ["папір","серветк","мило","шампун","зубн","порошок","гель","губк","пакет","фольг","засіб","туалетн"]
+};
+for (const k in AUTO_UK) AUTO[k] = AUTO[k].concat(AUTO_UK[k]);
+
+const MONTHS = ["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"];
+const MONTHS_S = ["січ","лют","бер","кві","тра","чер","лип","сер","вер","жов","лис","гру"];
 
 const $ = id => document.getElementById(id);
 
@@ -448,7 +460,7 @@ if (typeof fetch === "function") {
 function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 }
-function num(n, d) { return n.toLocaleString("ru-RU", { maximumFractionDigits: d == null ? 2 : d }); }
+function num(n, d) { return n.toLocaleString("uk-UA", { maximumFractionDigits: d == null ? 2 : d }); }
 function eur(n) { return num(n * rates.EUR, 1); }
 function uah(n) { return num(n * rates.UAH, 0); }
 function conv(n) { return "≈ " + eur(n) + " € · " + uah(n) + " грн"; }
@@ -502,10 +514,10 @@ function toggle(id) {
 
 function askPrice(it) {
   dialog({
-    title: "Цена товара",
-    sub: it.name + " · в леях",
+    title: "Ціна товару",
+    sub: it.name + " · у леях",
     input: { placeholder: "0", mode: "decimal", preset: it.price != null ? it.price : "" },
-    ok: "Готово", cancel: "Позже"
+    ok: "Готово", cancel: "Пізніше"
   }, v => {
     if (v === "") { it.price = null; save(); render(); return; }
     const p = parseNum(v);
@@ -519,7 +531,7 @@ function removeWithUndo(id) {
   const item = state.items[idx];
   state.items.splice(idx, 1);
   save(); render();
-  toast("Удалено: " + item.name, "Вернуть", () => {
+  toast("Видалено: " + item.name, "Повернути", () => {
     state.items.splice(Math.min(idx, state.items.length), 0, item);
     save(); render();
   });
@@ -549,7 +561,7 @@ function renderDock() {
   dock.style.display = tab === "list" ? "" : "none";
   dock.classList.toggle("has-finish", done.length > 0);
   const total = done.reduce((s, i) => s + (i.price || 0), 0);
-  $("finishBtn").textContent = total ? "Завершить покупку · " + num(total) + " лей" : "Завершить покупку";
+  $("finishBtn").textContent = total ? "Завершити покупку · " + num(total) + " лей" : "Завершити покупку";
 }
 
 const ICON_BAG = '<svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z" stroke-linejoin="round"/><path d="M9 8V7a3 3 0 0 1 6 0v1" stroke-linecap="round"/></svg>';
@@ -557,9 +569,9 @@ const ICON_BAG = '<svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-
 function rowHtml(i) {
   let price = "";
   if (i.price != null) price = `<button class="r-price">${num(i.price)} лей</button>`;
-  else if (i.done) price = `<button class="r-price empty">+ цена</button>`;
+  else if (i.done) price = `<button class="r-price empty">+ ціна</button>`;
   return `<div class="sw" data-id="${i.id}">
-    <div class="sw-del">Удалить</div>
+    <div class="sw-del">Видалити</div>
     <div class="row${i.done ? " done" : ""}">
       <span class="ck"></span>
       <div class="r-main">
@@ -567,7 +579,7 @@ function rowHtml(i) {
         ${i.qty ? `<div class="r-sub">${esc(i.qty)}</div>` : ""}
       </div>
       ${price}
-      <button class="r-x" aria-label="Удалить">×</button>
+      <button class="r-x" aria-label="Видалити">×</button>
     </div>
   </div>`;
 }
@@ -585,16 +597,16 @@ function renderList() {
   const active = state.items.filter(i => !i.done);
   const done = state.items.filter(i => i.done);
   const parts = [];
-  if (active.length) parts.push(active.length + " " + plural(active.length, "осталось", "осталось", "осталось"));
-  if (done.length) parts.push(done.length + " в корзине");
+  if (active.length) parts.push(active.length + " " + plural(active.length, "залишилось", "залишилось", "залишилось"));
+  if (done.length) parts.push(done.length + " у кошику");
   $("sub").textContent = parts.join(" · ");
 
   const view = $("view");
   if (!state.items.length) {
     const favs = topFavs(8);
     view.innerHTML = `<div class="empty">${ICON_BAG}
-      <h3>Список пуст</h3>
-      <p>Нажмите + чтобы добавить товар</p>
+      <h3>Список порожній</h3>
+      <p>Натисніть +, щоб додати товар</p>
       ${favs.length ? `<div class="chips">${favs.map(h =>
         `<button class="chip fav" data-name="${esc(h.name)}" data-qty="${esc(h.qty || "")}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`).join("")}</div>` : ""}
     </div>`;
@@ -610,26 +622,26 @@ function renderList() {
   // старые товары с неизвестной категорией
   const known = new Set(CATS.map(c => c.id));
   const orphan = active.filter(i => !known.has(i.cat || "other"));
-  if (orphan.length) html += `<div class="g-title">Разное</div>` + orphan.map(rowHtml).join("");
+  if (orphan.length) html += `<div class="g-title">Різне</div>` + orphan.map(rowHtml).join("");
 
   if (done.length) {
     const total = done.reduce((s, i) => s + (i.price || 0), 0);
-    html += `<div class="g-title">В корзине${total ? `<b>${num(total)} лей</b>` : ""}</div>` + done.map(rowHtml).join("");
-    html += `<button class="clear-btn" id="clearDone">Убрать отмеченные без сохранения</button>`;
+    html += `<div class="g-title">У кошику${total ? `<b>${num(total)} лей</b>` : ""}</div>` + done.map(rowHtml).join("");
+    html += `<button class="clear-btn" id="clearDone">Прибрати відмічені без збереження</button>`;
   }
   view.innerHTML = html;
 }
 
 function renderSaved() {
-  $("title").textContent = "Мои списки";
+  $("title").textContent = "Мої списки";
   const names = Object.keys(state.savedLists);
-  $("sub").textContent = names.length ? names.length + " " + plural(names.length, "список", "списка", "списков") : "";
-  let html = `<button class="btn-line" id="saveCur" ${state.items.length ? "" : "disabled"}>Сохранить текущий список</button>`;
+  $("sub").textContent = names.length ? names.length + " " + plural(names.length, "список", "списки", "списків") : "";
+  let html = `<button class="btn-line" id="saveCur" ${state.items.length ? "" : "disabled"}>Зберегти поточний список</button>`;
   if (!names.length) {
     html += `<div class="empty" style="padding-top:60px">
       <svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z" stroke-linejoin="round"/></svg>
-      <h3>Нет сохранённых списков</h3>
-      <p>Сохраните список, чтобы потом добавить его одним нажатием — например «На неделю»</p>
+      <h3>Немає збережених списків</h3>
+      <p>Збережіть список, щоб потім додати його одним натисканням — наприклад «На тиждень»</p>
     </div>`;
   } else {
     html += `<div style="margin-top:14px">` + names.map(n => {
@@ -638,7 +650,7 @@ function renderSaved() {
       return `<div class="nav-row saved-row" data-name="${esc(n)}">
         <div class="n-main">
           <div class="n-name">${esc(n)}</div>
-          <div class="n-sub">${items.length} ${plural(items.length, "товар", "товара", "товаров")} · ${esc(preview)}</div>
+          <div class="n-sub">${items.length} ${plural(items.length, "товар", "товари", "товарів")} · ${esc(preview)}</div>
         </div>
         <span class="chev">›</span>
       </div>`;
@@ -655,8 +667,8 @@ function renderStats() {
   if (!trips.length) {
     $("view").innerHTML = `<div class="empty">
       <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6" stroke-linecap="round"/></svg>
-      <h3>Пока нет покупок</h3>
-      <p>Отметьте купленные товары и нажмите «Завершить покупку» — расходы появятся здесь</p>
+      <h3>Поки немає покупок</h3>
+      <p>Відмітьте куплені товари й натисніть «Завершити покупку» — витрати з'являться тут</p>
     </div>`;
     return;
   }
@@ -676,8 +688,8 @@ function renderStats() {
     <div class="conv">${conv(cur.sum)}</div>
     <div class="mini">
       <div><b>${cur.count}</b><span>${plural(cur.count, "покупка", "покупки", "покупок")}</span></div>
-      <div><b>${num(avg, 0)} лей</b><span>средний чек</span></div>
-      <div><b>${eur(avg)} €</b><span>средний чек</span></div>
+      <div><b>${num(avg, 0)} лей</b><span>середній чек</span></div>
+      <div><b>${eur(avg)} €</b><span>середній чек</span></div>
     </div>
   </div>`;
 
@@ -698,13 +710,13 @@ function renderStats() {
     </div>`;
   }).join("") + `</div></div>`;
 
-  html += `<div class="g-title">История</div>` + trips.slice(0, 50).map(t => {
+  html += `<div class="g-title">Історія</div>` + trips.slice(0, 50).map(t => {
     const items = tripItems(t);
     const preview = items.slice(0, 3).map(i => i.name).join(", ") + (items.length > 3 ? "…" : "");
     return `<div class="nav-row trip-row" data-date="${t.date}">
       <div class="n-main">
         <div class="n-name">${fmtDate(t.date)}</div>
-        <div class="n-sub">${items.length} ${plural(items.length, "товар", "товара", "товаров")} · ${esc(preview)}</div>
+        <div class="n-sub">${items.length} ${plural(items.length, "товар", "товари", "товарів")} · ${esc(preview)}</div>
       </div>
       <div class="n-right">
         <div class="n-sum">${num(t.sum)} лей</div>
@@ -832,7 +844,7 @@ function doAdd() {
   selCat = null;
   renderAddSheet();
   render();
-  toast("Добавлено: " + name);
+  toast("Додано: " + name);
   $("nameInput").focus();
 }
 
@@ -852,7 +864,7 @@ $("favs").addEventListener("click", e => {
   const b = e.target.closest(".chip");
   if (!b) return;
   addItem(b.dataset.name, b.dataset.qty, b.dataset.cat);
-  toast("Добавлено: " + b.dataset.name);
+  toast("Додано: " + b.dataset.name);
   renderAddSheet();
   render();
 });
@@ -885,19 +897,19 @@ function openSaved(name) {
   if (!items) return;
   const body = items.map(i =>
     `<div class="ir"><span>${esc(i.name)}</span><span>${esc(i.qty || "")}</span></div>`).join("");
-  openInfo(name, items.length + " " + plural(items.length, "товар", "товара", "товаров"), body, [
-    { text: "Удалить", cls: "danger", fn: () => {
-      dialog({ title: "Удалить список?", sub: "«" + name + "» будет удалён", ok: "Удалить", danger: true }, () => {
+  openInfo(name, items.length + " " + plural(items.length, "товар", "товари", "товарів"), body, [
+    { text: "Видалити", cls: "danger", fn: () => {
+      dialog({ title: "Видалити список?", sub: "«" + name + "» буде видалено", ok: "Видалити", danger: true }, () => {
         delete state.savedLists[name];
         save(); closeInfo(); render();
-        toast("Список удалён");
+        toast("Список видалено");
       });
     }},
-    { text: "Добавить в покупки", cls: "primary", fn: () => {
+    { text: "Додати до покупок", cls: "primary", fn: () => {
       items.forEach(i => addItem(i.name, i.qty, i.cat));
       closeInfo();
       setTab("list");
-      toast("Добавлено " + items.length + " " + plural(items.length, "товар", "товара", "товаров"));
+      toast("Додано " + items.length + " " + plural(items.length, "товар", "товари", "товарів"));
     }}
   ]);
 }
@@ -905,15 +917,15 @@ function openSaved(name) {
 function saveCurrent() {
   if (!state.items.length) return;
   dialog({
-    title: "Сохранить список",
-    sub: "Например: «На неделю», «Шашлыки»",
-    input: { placeholder: "Название", mode: "text" },
-    ok: "Сохранить"
+    title: "Зберегти список",
+    sub: "Наприклад: «На тиждень», «Шашлики»",
+    input: { placeholder: "Назва", mode: "text" },
+    ok: "Зберегти"
   }, name => {
     if (!name) return;
     state.savedLists[name] = state.items.map(i => ({ name: i.name, qty: i.qty, cat: i.cat }));
     save(); render();
-    toast("Список «" + name + "» сохранён");
+    toast("Список «" + name + "» збережено");
   });
 }
 
@@ -923,14 +935,14 @@ function openTrip(t) {
     `<div class="ir"><span>${esc(i.name)}${i.qty ? `<small>${esc(i.qty)}</small>` : ""}</span><span>${i.price != null ? num(i.price) + " лей" : "—"}</span></div>`
   ).join("");
   openInfo("Покупка " + fmtDate(t.date), num(t.sum) + " лей · " + conv(t.sum), body, [
-    { text: "Удалить", cls: "danger", fn: () => {
-      dialog({ title: "Удалить запись?", sub: "Сумма уйдёт из статистики", ok: "Удалить", danger: true }, () => {
+    { text: "Видалити", cls: "danger", fn: () => {
+      dialog({ title: "Видалити запис?", sub: "Сума зникне зі статистики", ok: "Видалити", danger: true }, () => {
         state.trips = state.trips.filter(x => x.date !== t.date);
         save(); closeInfo(); render();
-        toast("Запись удалена");
+        toast("Запис видалено");
       });
     }},
-    { text: "Закрыть", cls: "ghost", fn: closeInfo }
+    { text: "Закрити", cls: "ghost", fn: closeInfo }
   ]);
 }
 
@@ -941,15 +953,15 @@ $("finishBtn").addEventListener("click", () => {
   const total = bought.reduce((s, i) => s + (i.price || 0), 0);
   const noPrice = bought.filter(i => i.price == null).length;
   dialog({
-    title: "Итог покупки",
+    title: "Підсумок покупки",
     sub: noPrice
-      ? "У " + noPrice + " " + plural(noPrice, "товара", "товаров", "товаров") + " нет цены — проверьте сумму в леях"
-      : bought.length + " " + plural(bought.length, "товар", "товара", "товаров") + " · сумма в леях",
+      ? "У " + noPrice + " " + plural(noPrice, "товару", "товарів", "товарів") + " немає ціни — перевірте суму в леях"
+      : bought.length + " " + plural(bought.length, "товар", "товари", "товарів") + " · сума в леях",
     input: { placeholder: "0", mode: "decimal", preset: total ? +total.toFixed(2) : "" },
-    ok: "Сохранить"
+    ok: "Зберегти"
   }, v => {
     const sum = parseNum(v);
-    if (isNaN(sum) || sum < 0) { toast("Введите сумму"); return; }
+    if (isNaN(sum) || sum < 0) { toast("Введіть суму"); return; }
     state.trips.push({
       date: new Date().toISOString(),
       sum,
@@ -958,7 +970,7 @@ $("finishBtn").addEventListener("click", () => {
     state.items = state.items.filter(i => !i.done);
     save();
     setTab("stats");
-    toast("Покупка сохранена");
+    toast("Покупку збережено");
   });
 });
 
@@ -979,7 +991,7 @@ function dialog(o, cb) {
   }
   $("dlgOk").textContent = o.ok || "Готово";
   $("dlgOk").className = "btn " + (o.danger ? "red" : "primary");
-  $("dlgCancel").textContent = o.cancel || "Отмена";
+  $("dlgCancel").textContent = o.cancel || "Скасувати";
   dlgCb = { fn: cb, hasInput: !!o.input };
   $("dlg").classList.add("show");
   if (o.input) setTimeout(() => { inp.focus(); inp.select(); }, 60);
