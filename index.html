@@ -434,7 +434,7 @@
 
 <div id="toast"><span id="toastText"></span><button id="toastBtn"></button></div>
 
-<div id="busy"><div class="busy-box"><div class="spin"></div><div id="busyText"></div><div class="busy-sub">Зазвичай це займає 5–15 секунд</div></div></div>
+<div id="busy"><div class="busy-box"><div class="spin"></div><div id="busyText"></div><div class="busy-sub"><span id="busySec">0 с</span> · зазвичай 5–15 секунд</div></div></div>
 <input type="file" id="fileInput" accept="image/*" style="display:none">
 
 <script>
@@ -1170,9 +1170,10 @@ $("fileInput").addEventListener("change", async e => {
   e.target.value = "";
   if (!f || !scanMode) return;
   const mode = scanMode;
-  showBusy("Розпізнаю чек…");
+  showBusy("Готую фото…");
   try {
     const b64 = await prepImage(f);
+    setBusy("Gemini читає чек…");
     const res = await gemini(b64, buildPrompt(mode.cands));
     hideBusy();
     openReview(res, mode);
@@ -1182,14 +1183,24 @@ $("fileInput").addEventListener("change", async e => {
   }
 });
 
-function showBusy(t) { $("busyText").textContent = t; $("busy").classList.add("show"); }
-function hideBusy() { $("busy").classList.remove("show"); }
+let busyTimer = null, busyStart = 0;
+function setBusy(t) { $("busyText").textContent = t; }
+function showBusy(t) {
+  setBusy(t);
+  busyStart = Date.now();
+  $("busySec").textContent = "0 с";
+  clearInterval(busyTimer);
+  busyTimer = setInterval(() => { $("busySec").textContent = Math.round((Date.now() - busyStart) / 1000) + " с"; }, 1000);
+  $("busy").classList.add("show");
+}
+function hideBusy() { clearInterval(busyTimer); $("busy").classList.remove("show"); }
 function showError(t) { dialog({ title: "Не вийшло", sub: t, ok: "Зрозуміло", noCancel: true }, () => {}); }
 function errText(err) {
   const m = (err && err.message) || "";
   if (m === "key") return "Ключ Gemini не підходить. Перевірте або змініть його в налаштуваннях (кнопка ⚙ угорі).";
   if (m === "limit") return "Забагато запитів до Gemini. Спробуйте ще раз за хвилину.";
   if (m === "net") return "Немає з'єднання з інтернетом. Перевірте зв'язок і спробуйте ще раз.";
+  if (m === "timeout") return "Gemini відповідає надто довго. Перевірте інтернет і спробуйте ще раз — можна сфотографувати чек ближче, щоб фото було меншим.";
   if (m === "model") return "Сервіс Gemini зараз недоступний. Спробуйте пізніше.";
   if (m === "image") return "Не вдалося відкрити фото. Спробуйте зробити знімок ще раз.";
   return "Не вдалося розпізнати чек. Спробуйте сфотографувати його ближче, рівніше й при хорошому світлі.";
@@ -1210,7 +1221,7 @@ async function prepImage(file) {
     const c = document.createElement("canvas");
     c.width = w; c.height = h;
     c.getContext("2d").drawImage(img, 0, 0, w, h);
-    return c.toDataURL("image/jpeg", 0.85).split(",")[1];
+    return c.toDataURL("image/jpeg", 0.8).split(",")[1];
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -1233,37 +1244,58 @@ ${JSON.stringify(list)}
 Respond with JSON only, in this shape: {"store": string|null, "date": string|null, "total": number|null, "lines": [{"receipt_name": string, "name_uk": string, "qty": string|null, "price": number, "match_id": string|null}]}`;
 }
 
-const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+// Порядок важен: сначала быстрые модели с минимальным «обдумыванием»
+const GEMINI_MODELS = [
+  { id: "gemini-3.6-flash", think: "minimal" },
+  { id: "gemini-3.5-flash-lite", think: "minimal" },
+  { id: "gemini-flash-latest", think: "low" }
+];
+const GEMINI_TIMEOUT = 60000;
+
+async function callGemini(model, think, key, b64, prompt) {
+  const gen = { responseMimeType: "application/json", temperature: 0 };
+  if (think) gen.thinkingConfig = { thinkingLevel: think };
+  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), GEMINI_TIMEOUT) : null;
+  try {
+    return await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }],
+        generationConfig: gen
+      }),
+      signal: ctrl ? ctrl.signal : undefined
+    });
+  } catch (e) {
+    throw new Error(e && e.name === "AbortError" ? "timeout" : "net");
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 async function gemini(b64, prompt) {
   const key = getKey();
   let lastErr = new Error("model");
   for (const m of GEMINI_MODELS) {
-    let r;
-    try {
-      r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 0 }
-        })
-      });
-    } catch (e) {
-      throw new Error("net");
-    }
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) {
+    let think = m.think;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const r = await callGemini(m.id, think, key, b64, prompt);
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        const parts = (((d.candidates || [])[0] || {}).content || {}).parts || [];
+        const text = parts.filter(p => p.text && !p.thought).map(p => p.text).join("");
+        try { return parseJson(text); } catch (e) { throw new Error("parse"); }
+      }
       const msg = (d.error && d.error.message) || "";
-      if (r.status === 404 || (r.status === 400 && /not found|not supported|unsupported/i.test(msg) && !/api key/i.test(msg))) { lastErr = new Error("model"); continue; }
+      // модель не принимает настройку «обдумывания» — повторяем без неё
+      if (r.status === 400 && think && /think/i.test(msg)) { think = null; continue; }
+      if (r.status === 404 || (r.status === 400 && /not found|not supported|unsupported/i.test(msg) && !/api key/i.test(msg))) { lastErr = new Error("model"); break; }
       if (r.status === 401 || r.status === 403 || /api key/i.test(msg)) throw new Error("key");
       if (r.status === 429) throw new Error("limit");
-      if (r.status >= 500) { lastErr = new Error("model"); continue; }
+      if (r.status >= 500) { lastErr = new Error("model"); break; }
       throw new Error("parse");
     }
-    const parts = (((d.candidates || [])[0] || {}).content || {}).parts || [];
-    const text = parts.filter(p => p.text && !p.thought).map(p => p.text).join("");
-    try { return parseJson(text); } catch (e) { throw new Error("parse"); }
   }
   throw lastErr;
 }
