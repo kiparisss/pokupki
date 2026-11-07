@@ -5,376 +5,388 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Покупки">
-<meta name="theme-color" content="#f2f2f7">
-<title>Список покупок</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%2334c759'/%3E%3Ctext x='90' y='118' font-size='90' text-anchor='middle'%3E🛒%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Покупки</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111113'/%3E%3Cpath d='M58 70h64l-6 58a8 8 0 0 1-8 7H72a8 8 0 0 1-8-7z' fill='none' stroke='%23fff' stroke-width='8' stroke-linejoin='round'/%3E%3Cpath d='M74 70v-6a16 16 0 0 1 32 0v6' fill='none' stroke='%23fff' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #f2f2f7;
-    --card: #ffffff;
-    --text: #1c1c1e;
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --text: #111113;
     --text2: #8e8e93;
-    --accent: #34c759;
-    --blue: #007aff;
-    --red: #ff3b30;
-    --sep: rgba(60,60,67,0.12);
+    --text3: #c7c7cc;
+    --line: rgba(0,0,0,0.07);
+    --chip: #ededf0;
+    --acc: #111113;
+    --on-acc: #ffffff;
+    --danger: #ff3b30;
+    --bar: rgba(247,247,248,0.86);
+    --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    --tabh: 56px;
+    --safe-b: env(safe-area-inset-bottom);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #000000;
-      --card: #1c1c1e;
-      --text: #ffffff;
-      --text2: #98989f;
-      --sep: rgba(84,84,88,0.5);
+      --surface: #141416;
+      --text: #f5f5f7;
+      --text2: #8e8e93;
+      --text3: #3a3a3c;
+      --line: rgba(255,255,255,0.08);
+      --chip: #1d1d20;
+      --acc: #f5f5f7;
+      --on-acc: #000000;
+      --bar: rgba(10,10,12,0.86);
+      --shadow: none;
     }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100%;
-    padding: env(safe-area-inset-top) 0 calc(150px + env(safe-area-inset-bottom));
+    padding: env(safe-area-inset-top) 0 calc(var(--tabh) + var(--safe-b) + 96px);
     -webkit-font-smoothing: antialiased;
-    overscroll-behavior-y: contain;
+    -webkit-user-select: none; user-select: none;
   }
-  header {
-    padding: 18px 16px 6px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-  }
-  header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
-  #counter { font-size: 15px; color: var(--text2); font-weight: 500; }
+  input { -webkit-user-select: text; user-select: text; font-family: inherit; }
+  button { font-family: inherit; cursor: pointer; }
 
-  /* Вкладки */
-  #tabs { display: flex; gap: 6px; padding: 6px 16px 4px; }
-  .tab {
-    flex: 1;
-    border: none; border-radius: 12px;
-    padding: 9px 0;
-    font-size: 15px; font-weight: 600;
-    background: var(--card); color: var(--text2);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-  .tab.sel { background: var(--accent); color: #fff; }
+  /* Заголовок */
+  header { padding: 26px 20px 4px; }
+  header h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.1; }
+  #sub { font-size: 14px; color: var(--text2); margin-top: 4px; min-height: 18px; }
 
-  /* Частые покупки и сохранённые списки */
-  #favWrap { padding: 8px 0 0; }
-  .sec-label { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; padding: 8px 16px 6px; font-weight: 600; }
-  #favs, #savedRow {
-    display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 8px;
+  /* Группы и строки */
+  .g-title {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 24px 20px 6px;
+  }
+  .g-title b { font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 14px; }
+  .sw { position: relative; overflow: hidden; }
+  .sw-del {
+    position: absolute; inset: 0;
+    background: var(--danger); color: #fff;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 22px; font-size: 15px; font-weight: 600;
+  }
+  .row {
+    position: relative;
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    background: var(--bg);
+    transition: transform 0.22s ease;
+    min-height: 54px;
+  }
+  .row::after {
+    content: ""; position: absolute; left: 56px; right: 0; bottom: 0;
+    height: 1px; background: var(--line);
+  }
+  .sw:last-child .row::after { display: none; }
+  .ck {
+    width: 22px; height: 22px; flex: 0 0 22px;
+    border: 1.5px solid var(--text3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .done .ck { background: var(--acc); border-color: var(--acc); }
+  .done .ck::after {
+    content: ""; width: 5px; height: 10px;
+    border: solid var(--on-acc); border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+  }
+  .r-main { flex: 1; min-width: 0; }
+  .r-name { font-size: 17px; overflow-wrap: anywhere; }
+  .r-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .done .r-name { color: var(--text2); text-decoration: line-through; text-decoration-color: var(--text3); }
+  .r-price {
+    border: none; background: none; color: var(--text);
+    font-size: 15px; font-weight: 500; padding: 6px 0 6px 8px; white-space: nowrap;
+  }
+  .r-price.empty { color: var(--text2); font-size: 14px; font-weight: 400; }
+  .r-x { display: none; border: none; background: none; color: var(--text3); font-size: 20px; padding: 4px; line-height: 1; }
+  @media (hover: hover) { .row:hover .r-x { display: block; } .r-x:hover { color: var(--danger); } }
+  .clear-btn {
+    display: block; margin: 10px auto 0; border: none; background: none;
+    color: var(--text2); font-size: 13px; padding: 10px 16px;
+  }
+
+  /* Пустые состояния */
+  .empty { text-align: center; padding: 80px 40px 20px; color: var(--text2); }
+  .empty svg { width: 44px; height: 44px; stroke: var(--text3); fill: none; stroke-width: 1.5; margin-bottom: 14px; }
+  .empty h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .empty p { font-size: 15px; line-height: 1.45; }
+  .empty .chips { justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+
+  /* Чипы */
+  .chips {
+    display: flex; gap: 8px; overflow-x: auto;
     -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
-  #favs::-webkit-scrollbar, #savedRow::-webkit-scrollbar { display: none; }
+  .chips::-webkit-scrollbar { display: none; }
   .chip {
     flex: 0 0 auto;
-    background: var(--card);
-    border: none;
-    border-radius: 18px;
-    padding: 9px 14px;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-    transition: transform 0.1s;
-    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); background: transparent; color: var(--text);
+    border-radius: 18px; padding: 8px 14px;
+    font-size: 14px; font-weight: 500;
+    transition: transform 0.1s, background 0.15s;
   }
-  .chip:active { transform: scale(0.94); }
-  .chip.added { color: var(--accent); }
-  .chip .chip-x { color: var(--red); font-size: 17px; line-height: 1; opacity: 0.7; }
+  .chip:active { transform: scale(0.95); }
+  .chip.sel { background: var(--acc); color: var(--on-acc); border-color: var(--acc); }
 
-  /* Список */
-  main { padding: 4px 16px; }
-  .cat-title {
-    font-size: 13px; font-weight: 700; color: var(--text2);
-    text-transform: uppercase; letter-spacing: 0.4px;
-    padding: 16px 4px 6px;
-    display: flex; align-items: center; gap: 6px;
+  /* Нижние кнопки: завершить и + */
+  #dock {
+    position: fixed; left: 0; right: 0;
+    bottom: calc(var(--tabh) + var(--safe-b) + 14px);
+    display: flex; gap: 10px; padding: 0 16px; justify-content: flex-end;
+    pointer-events: none; z-index: 20;
   }
-  .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  .item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 13px 14px;
-    position: relative;
+  #dock > * { pointer-events: auto; }
+  #finishBtn {
+    flex: 1; height: 52px; border: none; border-radius: 26px;
+    background: var(--acc); color: var(--on-acc);
+    font-size: 16px; font-weight: 600; box-shadow: var(--shadow);
+    display: none;
   }
-  .item:not(:last-child)::after {
-    content: ""; position: absolute; left: 48px; right: 0; bottom: 0;
-    height: 1px; background: var(--sep);
-  }
-  .check {
-    width: 26px; height: 26px; flex: 0 0 26px;
-    border: 2px solid var(--text2);
-    border-radius: 50%;
-    background: none;
+  #fab {
+    width: 52px; height: 52px; flex: 0 0 52px; border-radius: 50%;
+    border: none; background: var(--acc); color: var(--on-acc);
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px; color: #fff;
-    transition: all 0.15s;
+    box-shadow: var(--shadow); transition: transform 0.12s;
   }
-  .item.done .check { background: var(--accent); border-color: var(--accent); }
-  .item-name { flex: 1; font-size: 17px; min-width: 0; overflow-wrap: break-word; }
-  .item.done .item-name { color: var(--text2); text-decoration: line-through; }
-  .qty {
-    font-size: 15px; color: var(--text2); font-weight: 500;
-    background: var(--bg); border-radius: 8px; padding: 3px 8px;
-    border: none; white-space: nowrap;
-  }
-  .price { color: var(--accent); font-weight: 600; }
-  .del {
-    background: none; border: none; color: var(--red);
-    font-size: 22px; padding: 4px 2px; line-height: 1;
-    opacity: 0.75;
-  }
-  #empty, .empty {
-    text-align: center; color: var(--text2); padding: 50px 30px;
-    font-size: 17px; line-height: 1.5;
-  }
-  #empty .emoji, .empty .emoji { font-size: 52px; display: block; margin-bottom: 12px; }
+  #fab:active, #finishBtn:active { transform: scale(0.95); }
+  #fab svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+  #dock.has-finish #finishBtn { display: block; }
+  #dock.has-finish #fab { background: var(--surface); color: var(--text); border: 1px solid var(--line); }
 
-  /* Кнопки действий */
-  #actions { display: flex; gap: 8px; padding: 14px 16px 0; }
-  .act-btn {
-    flex: 1;
-    border: none; border-radius: 12px;
-    padding: 12px 8px;
-    font-size: 15px; font-weight: 600;
-    background: var(--card); color: var(--blue);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  /* Нижнее меню */
+  #tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: calc(var(--tabh) + var(--safe-b));
+    padding-bottom: var(--safe-b);
+    background: var(--bar);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    border-top: 1px solid var(--line);
+    display: flex; z-index: 30;
   }
-  .act-btn.primary { background: var(--accent); color: #fff; }
-  .act-btn:disabled { opacity: 0.4; }
-  #clearDone {
-    display: block; margin: 14px auto 0;
-    background: none; border: none; color: var(--blue);
-    font-size: 16px; font-weight: 500; padding: 8px 16px;
+  .tb {
+    flex: 1; border: none; background: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    color: var(--text2); font-size: 11px; font-weight: 500;
   }
+  .tb svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .tb.sel { color: var(--text); }
+
+  /* Шторки */
+  .bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.32);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 60;
+  }
+  .bg.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: var(--kb, 0px);
+    max-width: 560px; margin: 0 auto;
+    background: var(--surface);
+    border-radius: 22px 22px 0 0;
+    padding: 10px 20px calc(18px + var(--safe-b));
+    transform: translateY(110%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 70; max-height: 86vh; overflow-y: auto;
+  }
+  .sheet.show { transform: none; }
+  .grab { width: 36px; height: 5px; border-radius: 3px; background: var(--text3); margin: 0 auto 16px; }
+  .s-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .s-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .s-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin: 18px 0 8px; }
+  .s-chips { margin: 0 -20px; padding: 0 20px 2px; }
+  .field {
+    width: 100%; font-size: 17px; padding: 14px 16px;
+    border: none; border-radius: 14px;
+    background: var(--chip); color: var(--text); outline: none;
+  }
+  .field::placeholder { color: var(--text2); }
+  .f-row { display: flex; gap: 10px; }
+  .f-row .qty { flex: 0 0 104px; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn {
+    flex: 1; height: 50px; border: none; border-radius: 14px;
+    font-size: 16px; font-weight: 600;
+  }
+  .btn.primary { background: var(--acc); color: var(--on-acc); }
+  .btn.ghost { background: var(--chip); color: var(--text); }
+  .btn.danger { background: var(--chip); color: var(--danger); }
+  .btn:disabled { opacity: 0.35; }
+  .ir {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 13px 0; font-size: 16px; border-bottom: 1px solid var(--line);
+  }
+  .ir:last-child { border-bottom: none; }
+  .ir span:last-child { color: var(--text2); white-space: nowrap; }
+  .ir small { color: var(--text2); font-size: 13px; margin-left: 6px; }
+  #infoBody { margin-top: 10px; }
+
+  /* Диалог */
+  #dlg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.36);
+    display: none; align-items: center; justify-content: center;
+    z-index: 90; padding: 20px;
+  }
+  #dlg.show { display: flex; }
+  .dlg-box { background: var(--surface); border-radius: 20px; width: 100%; max-width: 320px; padding: 22px 18px 16px; }
+  #dlgTitle { font-size: 17px; font-weight: 600; text-align: center; }
+  #dlgSub { font-size: 14px; color: var(--text2); text-align: center; margin-top: 6px; line-height: 1.4; }
+  #dlgInput { margin-top: 16px; text-align: center; font-size: 20px; }
+  .dlg-box .actions { margin-top: 16px; }
+  .btn.red { background: var(--danger); color: #fff; }
+
+  /* Тост */
+  #toast {
+    position: fixed; left: 50%;
+    bottom: calc(var(--tabh) + var(--safe-b) + 80px);
+    transform: translate(-50%, 10px);
+    background: var(--acc); color: var(--on-acc);
+    border-radius: 14px; padding: 12px 16px;
+    font-size: 14px; display: flex; gap: 16px; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+    z-index: 80; max-width: calc(100% - 40px); white-space: nowrap;
+  }
+  #toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  #toast button { border: none; background: none; color: var(--on-acc); font-size: 14px; font-weight: 700; padding: 0; }
+  #toast span { overflow: hidden; text-overflow: ellipsis; }
+
+  /* Мои списки */
+  .btn-line {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 40px); margin: 16px 20px 0; height: 50px;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: transparent; color: var(--text); font-size: 15px; font-weight: 500;
+  }
+  .btn-line:disabled { opacity: 0.35; }
+  .nav-row {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    padding: 15px 20px; cursor: pointer;
+  }
+  .nav-row::after { content: ""; position: absolute; left: 20px; right: 0; bottom: 0; height: 1px; background: var(--line); }
+  .nav-row:last-child::after { display: none; }
+  .nav-row:active { background: var(--chip); }
+  .n-main { flex: 1; min-width: 0; }
+  .n-name { font-size: 17px; }
+  .n-sub { font-size: 13px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .n-right { text-align: right; white-space: nowrap; }
+  .n-sum { font-size: 16px; font-weight: 600; }
+  .n-conv { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .chev { color: var(--text3); font-size: 22px; line-height: 1; }
 
   /* Статистика */
-  #statsView { display: none; padding: 4px 16px; }
-  .stat-card {
-    background: var(--card); border-radius: 14px;
-    padding: 16px; margin-top: 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-  .stat-month { font-size: 17px; font-weight: 700; margin-bottom: 10px; text-transform: capitalize; }
-  .stat-nums { display: flex; gap: 8px; }
-  .stat-num { flex: 1; text-align: center; }
-  .stat-num b { display: block; font-size: 21px; font-weight: 800; }
-  .stat-num span { font-size: 12px; color: var(--text2); }
-  .bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 14px; }
-  .bar-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
-  .bar { width: 100%; max-width: 44px; background: var(--accent); border-radius: 6px 6px 2px 2px; min-height: 3px; }
-  .bar-col.cur .bar { background: var(--blue); }
-  .bar-lbl { font-size: 11px; color: var(--text2); }
-  .bar-val { font-size: 11px; color: var(--text2); font-weight: 600; }
-  .trip {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 14px; position: relative;
-  }
-  .trip:not(:last-child)::after {
-    content: ""; position: absolute; left: 14px; right: 0; bottom: 0;
-    height: 1px; background: var(--sep);
-  }
-  .trip-date { font-size: 15px; }
-  .trip-info { font-size: 13px; color: var(--text2); }
-  .trip-sum { margin-left: auto; font-size: 16px; font-weight: 700; white-space: nowrap; text-align: right; }
-  .trip-eur { font-size: 11px; color: var(--text2); font-weight: 500; }
-
-  /* Панель добавления */
-  #addBar {
-    position: fixed; left: 0; right: 0; bottom: 0;
-    background: var(--card);
-    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
-    box-shadow: 0 -1px 0 var(--sep), 0 -6px 20px rgba(0,0,0,0.06);
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  #addRow { display: flex; gap: 8px; }
-  #nameInput {
-    flex: 1; min-width: 0;
-    font-size: 17px;
-    padding: 11px 14px;
-    border: none; border-radius: 12px;
-    background: var(--bg); color: var(--text);
-    outline: none;
-  }
-  #qtyInput {
-    width: 84px;
-    font-size: 16px;
-    padding: 11px 10px;
-    border: none; border-radius: 12px;
-    background: var(--bg); color: var(--text);
-    outline: none;
-  }
-  #nameInput::placeholder, #qtyInput::placeholder { color: var(--text2); }
-  #addBtn {
-    flex: 0 0 46px; height: 46px;
-    border: none; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    font-size: 26px; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.1s;
-  }
-  #addBtn:active { transform: scale(0.9); }
-  #cats {
-    display: flex; gap: 6px; overflow-x: auto;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  #cats::-webkit-scrollbar { display: none; }
-  .cat-btn {
-    flex: 0 0 auto;
-    border: none; border-radius: 14px;
-    background: var(--bg); color: var(--text2);
-    font-size: 13px; font-weight: 600;
-    padding: 7px 11px;
-  }
-  .cat-btn.sel { background: var(--accent); color: #fff; }
-
-  /* Модалка */
-  #overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 50; padding: 20px;
-  }
-  #overlay.show { display: flex; }
-  #modal {
-    background: var(--card);
-    border-radius: 16px;
-    width: 100%; max-width: 320px;
-    padding: 20px 18px 14px;
-  }
-  #modalTitle { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-  #modalSub { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 12px; }
-  #modalInput {
-    width: 100%;
-    font-size: 17px;
-    padding: 11px 14px;
-    border: none; border-radius: 12px;
-    background: var(--bg); color: var(--text);
-    outline: none;
-    margin-bottom: 12px;
-  }
-  #modalBtns { display: flex; gap: 8px; }
-  #modalBtns button {
-    flex: 1; border: none; border-radius: 12px;
-    padding: 12px 0; font-size: 16px; font-weight: 600;
-  }
-  #modalCancel { background: var(--bg); color: var(--text); }
-  #modalOk { background: var(--accent); color: #fff; }
-
-  /* Детали покупки */
-  #tripOverlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45);
-    display: none;
-    align-items: flex-end; justify-content: center;
-    z-index: 60;
-  }
-  #tripOverlay.show { display: flex; }
-  #tripCard {
-    background: var(--card);
-    border-radius: 20px 20px 0 0;
-    width: 100%; max-width: 560px;
-    max-height: 80%;
-    overflow-y: auto;
-    padding: 18px 18px calc(24px + env(safe-area-inset-bottom));
-  }
-  #tripHead { display: flex; justify-content: space-between; align-items: center; }
-  #tripTitle { font-size: 18px; font-weight: 800; }
-  #tripClose {
-    border: none; background: var(--bg); color: var(--text2);
-    border-radius: 50%; width: 30px; height: 30px; font-size: 16px; line-height: 1;
-  }
-  #tripTotal { font-size: 14px; color: var(--text2); margin: 4px 0 12px; }
-  .tr-item {
-    display: flex; justify-content: space-between; gap: 10px;
-    padding: 10px 0; font-size: 15px;
-    border-bottom: 1px solid var(--sep);
-  }
-  .tr-item:last-child { border-bottom: none; }
-  .tr-item .tr-price { color: var(--text2); white-space: nowrap; font-weight: 600; }
+  .hero { padding: 20px 20px 0; }
+  .hero .big { font-size: 42px; font-weight: 700; letter-spacing: -1.2px; line-height: 1.05; }
+  .hero .big span { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; color: var(--text2); margin-left: 4px; }
+  .hero .conv { font-size: 15px; color: var(--text2); margin-top: 6px; }
+  .mini { display: flex; gap: 28px; margin-top: 20px; }
+  .mini b { display: block; font-size: 17px; font-weight: 600; }
+  .mini span { font-size: 12px; color: var(--text2); }
+  .chart { padding: 30px 20px 0; }
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 130px; }
+  .bar-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  .bar { width: 100%; max-width: 34px; border-radius: 8px; background: var(--chip); min-height: 4px; }
+  .bar-col.cur .bar { background: var(--acc); }
+  .bar-val { font-size: 10px; color: var(--text2); margin-bottom: 4px; white-space: nowrap; }
+  .bar-lbl { font-size: 11px; color: var(--text2); margin-top: 6px; }
+  .bar-col.cur .bar-lbl { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Покупки</h1>
-  <span id="counter"></span>
+  <h1 id="title">Покупки</h1>
+  <div id="sub"></div>
 </header>
 
-<div id="tabs">
-  <button class="tab sel" id="tabList">🛒 Список</button>
-  <button class="tab" id="tabStats">📊 Статистика</button>
+<main id="view"></main>
+
+<div id="dock">
+  <button id="finishBtn"></button>
+  <button id="fab" aria-label="Добавить товар"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 
-<div id="listView">
-  <div id="actions">
-    <button class="act-btn" id="saveListBtn">💾 Сохранить список</button>
-    <button class="act-btn primary" id="finishBtn">✓ Завершить покупки</button>
-  </div>
+<nav id="tabbar">
+  <button class="tb sel" data-tab="list">
+    <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>
+    Список
+  </button>
+  <button class="tb" data-tab="saved">
+    <svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
+    Мои списки
+  </button>
+  <button class="tb" data-tab="stats">
+    <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>
+    Статистика
+  </button>
+</nav>
 
-  <div id="savedWrap" style="display:none">
-    <div class="sec-label">Мои списки</div>
-    <div id="savedRow"></div>
+<!-- Шторка добавления -->
+<div class="bg" id="addBg"></div>
+<div class="sheet" id="addSheet">
+  <div class="grab"></div>
+  <div class="f-row">
+    <input class="field" id="nameInput" type="text" placeholder="Что купить?" autocomplete="off" enterkeyhint="done">
+    <input class="field qty" id="qtyInput" type="text" placeholder="Кол-во" autocomplete="off" enterkeyhint="done">
   </div>
-
-  <div id="favWrap">
-    <div class="sec-label">Частые покупки</div>
-    <div id="favs"></div>
+  <div class="s-label">Категория</div>
+  <div class="chips s-chips" id="cats"></div>
+  <div id="favBlock">
+    <div class="s-label">Часто покупаете</div>
+    <div class="chips s-chips" id="favs"></div>
   </div>
-
-  <main id="list"></main>
+  <div class="actions">
+    <button class="btn ghost" id="addClose">Готово</button>
+    <button class="btn primary" id="addBtn">Добавить</button>
+  </div>
 </div>
 
-<div id="statsView"></div>
-
-<div id="addBar">
-  <div id="addRow">
-    <input id="nameInput" type="text" placeholder="Что купить?" autocomplete="off" enterkeyhint="done">
-    <input id="qtyInput" type="text" placeholder="Кол-во" autocomplete="off">
-    <button id="addBtn" aria-label="Добавить">+</button>
-  </div>
-  <div id="cats"></div>
+<!-- Шторка просмотра (сохранённый список / покупка) -->
+<div class="bg" id="infoBg"></div>
+<div class="sheet" id="infoSheet">
+  <div class="grab"></div>
+  <div class="s-title" id="infoTitle"></div>
+  <div class="s-sub" id="infoSub"></div>
+  <div id="infoBody"></div>
+  <div class="actions" id="infoActions"></div>
 </div>
 
-<div id="tripOverlay">
-  <div id="tripCard">
-    <div id="tripHead">
-      <div id="tripTitle"></div>
-      <button id="tripClose" aria-label="Закрыть">✕</button>
+<!-- Диалог -->
+<div id="dlg">
+  <div class="dlg-box">
+    <div id="dlgTitle"></div>
+    <div id="dlgSub"></div>
+    <input class="field" id="dlgInput" autocomplete="off">
+    <div class="actions">
+      <button class="btn ghost" id="dlgCancel">Отмена</button>
+      <button class="btn primary" id="dlgOk">Готово</button>
     </div>
-    <div id="tripTotal"></div>
-    <div id="tripItems"></div>
   </div>
 </div>
 
-<div id="overlay">
-  <div id="modal">
-    <div id="modalTitle"></div>
-    <div id="modalSub"></div>
-    <input id="modalInput" autocomplete="off">
-    <div id="modalBtns">
-      <button id="modalCancel">Отмена</button>
-      <button id="modalOk">Готово</button>
-    </div>
-  </div>
-</div>
+<div id="toast"><span id="toastText"></span><button id="toastBtn"></button></div>
 
 <script>
 const CATS = [
-  { id: "other",  name: "Разное",   icon: "🛍️" },
-  { id: "fruit",  name: "Овощи и фрукты", icon: "🥦" },
-  { id: "dairy",  name: "Молочное", icon: "🥛" },
-  { id: "meat",   name: "Мясо и рыба", icon: "🍗" },
-  { id: "bakery", name: "Хлеб",     icon: "🍞" },
-  { id: "grocery",name: "Бакалея",  icon: "🍝" },
-  { id: "frozen", name: "Заморозка",icon: "🧊" },
-  { id: "drinks", name: "Напитки",  icon: "🧃" },
-  { id: "home",   name: "Дом и быт",icon: "🧻" }
+  { id: "fruit",  name: "Овощи и фрукты" },
+  { id: "dairy",  name: "Молочное" },
+  { id: "meat",   name: "Мясо и рыба" },
+  { id: "bakery", name: "Хлеб" },
+  { id: "grocery",name: "Бакалея" },
+  { id: "frozen", name: "Заморозка" },
+  { id: "drinks", name: "Напитки" },
+  { id: "home",   name: "Дом и быт" },
+  { id: "other",  name: "Разное" }
 ];
 
 const AUTO = {
@@ -388,9 +400,12 @@ const AUTO = {
   home:   ["бумаг","салфетк","мыло","шампун","зубн","порошок","гель","губк","пакет","фольг","средство","чистящ","туалетн"]
 };
 
-const MONTHS = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 const MONTHS_S = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
 
+const $ = id => document.getElementById(id);
+
+/* ---------- Данные ---------- */
 const KEY = "shoplist_v1";
 let state = load();
 
@@ -400,6 +415,8 @@ function load() {
     const raw = localStorage.getItem(KEY);
     if (raw) s = Object.assign(s, JSON.parse(raw));
   } catch (e) {}
+  s.items = s.items || [];
+  s.history = s.history || {};
   s.savedLists = s.savedLists || {};
   s.trips = s.trips || [];
   return s;
@@ -408,73 +425,8 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
 }
 
-function guessCat(name) {
-  const n = name.toLowerCase();
-  for (const cat in AUTO) {
-    if (AUTO[cat].some(w => n.includes(w))) return cat;
-  }
-  return "other";
-}
-
-let selCat = null;
-const $ = id => document.getElementById(id);
-
-function addItem(name, qty, cat) {
-  name = name.trim();
-  if (!name) return;
-  const key = name.toLowerCase();
-  const existing = state.items.find(i => i.name.toLowerCase() === key && !i.done);
-  if (existing) {
-    if (qty) existing.qty = qty;
-  } else {
-    state.items.push({
-      id: Date.now() + Math.random(),
-      name,
-      qty: qty || "",
-      cat: cat || guessCat(name),
-      done: false
-    });
-  }
-  const h = state.history[key] || { name, count: 0, cat: cat || guessCat(name), qty: "" };
-  h.count++;
-  if (qty) h.qty = qty;
-  state.history[key] = h;
-  save();
-  render();
-}
-
-function toggle(id) {
-  const it = state.items.find(i => i.id === id);
-  if (!it) return;
-  it.done = !it.done;
-  save(); render();
-  if (it.done && it.price == null) askPrice(it);
-}
-
-function askPrice(it) {
-  askModal("Сколько стоил товар?", "«" + it.name + "» — цена в леях (можно отменить и вписать позже)", "Цена, лей", "decimal", v => {
-    const p = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
-    if (!isNaN(p) && p >= 0) { it.price = p; save(); render(); }
-  }, it.price != null ? it.price : "");
-}
-function remove(id) {
-  state.items = state.items.filter(i => i.id !== id);
-  save(); render();
-}
-function clearDone() {
-  state.items = state.items.filter(i => !i.done);
-  save(); render();
-}
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
-function fmtSum(n) {
-  return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
-}
-
-/* ---------- Курсы валют (базовая — лей, RON) ---------- */
-let rates = { EUR: 0.197, UAH: 9.7 }; // запасные курсы
+/* ---------- Курсы (базовая валюта — лей) ---------- */
+let rates = { EUR: 0.197, UAH: 9.7 };
 try {
   const r = JSON.parse(localStorage.getItem("ron_rates"));
   if (r && r.EUR && r.UAH) rates = r;
@@ -486,105 +438,228 @@ if (typeof fetch === "function") {
       if (d && d.rates && d.rates.EUR && d.rates.UAH) {
         rates = { EUR: d.rates.EUR, UAH: d.rates.UAH };
         try { localStorage.setItem("ron_rates", JSON.stringify(rates)); } catch (e) {}
-        if ($("statsView").style.display === "block") renderStats();
+        if (tab === "stats") render();
       }
     })
     .catch(() => {});
 }
-function eur(n) {
-  return (n * rates.EUR).toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+
+/* ---------- Утилиты ---------- */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 }
-function uah(n) {
-  return (n * rates.UAH).toLocaleString("ru-RU", { maximumFractionDigits: 0 });
+function num(n, d) { return n.toLocaleString("ru-RU", { maximumFractionDigits: d == null ? 2 : d }); }
+function eur(n) { return num(n * rates.EUR, 1); }
+function uah(n) { return num(n * rates.UAH, 0); }
+function conv(n) { return "≈ " + eur(n) + " € · " + uah(n) + " грн"; }
+function parseNum(v) { return parseFloat(String(v).replace(",", ".").replace(/\s/g, "")); }
+function guessCat(name) {
+  const n = name.toLowerCase();
+  for (const cat in AUTO) if (AUTO[cat].some(w => n.includes(w))) return cat;
+  return "other";
+}
+function plural(n, a, b, c) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return a;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return b;
+  return c;
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
+}
+function tripItems(t) {
+  return t.items.map(it => typeof it === "string" ? { name: it, qty: "", price: null } : it);
 }
 
-/* ---------- Модалка ---------- */
-let modalCb = null;
-function askModal(title, sub, placeholder, inputMode, cb, preset) {
-  $("modalTitle").textContent = title;
-  $("modalSub").textContent = sub;
-  const inp = $("modalInput");
-  inp.value = preset != null ? String(preset) : "";
-  inp.placeholder = placeholder;
-  inp.inputMode = inputMode || "text";
-  modalCb = cb;
-  $("overlay").classList.add("show");
-  setTimeout(() => inp.focus(), 50);
+/* ---------- Действия со списком ---------- */
+function addItem(name, qty, cat) {
+  name = name.trim();
+  if (!name) return false;
+  const key = name.toLowerCase();
+  const existing = state.items.find(i => i.name.toLowerCase() === key && !i.done);
+  const c = cat || guessCat(name);
+  if (existing) {
+    if (qty) existing.qty = qty;
+  } else {
+    state.items.push({ id: Date.now() + Math.random(), name, qty: qty || "", cat: c, done: false });
+  }
+  const h = state.history[key] || { name, count: 0, cat: c, qty: "" };
+  h.count++;
+  if (qty) h.qty = qty;
+  state.history[key] = h;
+  save();
+  return true;
 }
-$("modalCancel").addEventListener("click", () => { $("overlay").classList.remove("show"); modalCb = null; });
-$("modalOk").addEventListener("click", () => {
-  const v = $("modalInput").value.trim();
-  $("overlay").classList.remove("show");
-  if (modalCb) modalCb(v);
-  modalCb = null;
-});
-$("modalInput").addEventListener("keydown", e => { if (e.key === "Enter") $("modalOk").click(); });
 
-/* ---------- Сохранённые списки ---------- */
-$("saveListBtn").addEventListener("click", () => {
-  if (!state.items.length) { askModal("Список пуст", "Сначала добавьте покупки", "", "text", () => {}); return; }
-  askModal("Сохранить список", "Например: «На неделю», «Шашлыки»", "Название списка", "text", name => {
-    if (!name) return;
-    state.savedLists[name] = state.items.map(i => ({ name: i.name, qty: i.qty, cat: i.cat }));
+function toggle(id) {
+  const it = state.items.find(i => i.id === id);
+  if (!it) return;
+  it.done = !it.done;
+  save(); render();
+  if (it.done && it.price == null) askPrice(it);
+}
+
+function askPrice(it) {
+  dialog({
+    title: "Цена товара",
+    sub: it.name + " · в леях",
+    input: { placeholder: "0", mode: "decimal", preset: it.price != null ? it.price : "" },
+    ok: "Готово", cancel: "Позже"
+  }, v => {
+    if (v === "") { it.price = null; save(); render(); return; }
+    const p = parseNum(v);
+    if (!isNaN(p) && p >= 0) { it.price = p; save(); render(); }
+  });
+}
+
+function removeWithUndo(id) {
+  const idx = state.items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const item = state.items[idx];
+  state.items.splice(idx, 1);
+  save(); render();
+  toast("Удалено: " + item.name, "Вернуть", () => {
+    state.items.splice(Math.min(idx, state.items.length), 0, item);
     save(); render();
   });
-});
-
-function loadSaved(name) {
-  const list = state.savedLists[name];
-  if (!list) return;
-  for (const it of list) addItem(it.name, it.qty, it.cat);
 }
 
-$("savedRow").addEventListener("click", e => {
-  const x = e.target.closest(".chip-x");
-  const chip = e.target.closest(".chip");
-  if (!chip) return;
-  const name = chip.dataset.name;
-  if (x) {
-    askModal("Удалить список?", "«" + name + "» — напишите «да» для удаления", "да", "text", v => {
-      if (v.toLowerCase() === "да") { delete state.savedLists[name]; save(); render(); }
-    });
-  } else {
-    loadSaved(name);
-    chip.classList.add("added");
-  }
-});
+/* ---------- Вкладки и отрисовка ---------- */
+let tab = "list";
 
-/* ---------- Завершение покупок ---------- */
-$("finishBtn").addEventListener("click", () => {
-  const bought = state.items.filter(i => i.done);
-  if (!bought.length) {
-    askModal("Нечего завершать", "Сначала отметьте купленные товары галочками", "", "text", () => {});
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll(".tb").forEach(b => b.classList.toggle("sel", b.dataset.tab === t));
+  window.scrollTo(0, 0);
+  render();
+}
+document.querySelectorAll(".tb").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+
+function render() {
+  if (tab === "list") renderList();
+  else if (tab === "saved") renderSaved();
+  else renderStats();
+  renderDock();
+}
+
+function renderDock() {
+  const done = state.items.filter(i => i.done);
+  const dock = $("dock");
+  dock.style.display = tab === "list" ? "" : "none";
+  dock.classList.toggle("has-finish", done.length > 0);
+  const total = done.reduce((s, i) => s + (i.price || 0), 0);
+  $("finishBtn").textContent = total ? "Завершить покупку · " + num(total) + " лей" : "Завершить покупку";
+}
+
+const ICON_BAG = '<svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z" stroke-linejoin="round"/><path d="M9 8V7a3 3 0 0 1 6 0v1" stroke-linecap="round"/></svg>';
+
+function rowHtml(i) {
+  let price = "";
+  if (i.price != null) price = `<button class="r-price">${num(i.price)} лей</button>`;
+  else if (i.done) price = `<button class="r-price empty">+ цена</button>`;
+  return `<div class="sw" data-id="${i.id}">
+    <div class="sw-del">Удалить</div>
+    <div class="row${i.done ? " done" : ""}">
+      <span class="ck"></span>
+      <div class="r-main">
+        <div class="r-name">${esc(i.name)}</div>
+        ${i.qty ? `<div class="r-sub">${esc(i.qty)}</div>` : ""}
+      </div>
+      ${price}
+      <button class="r-x" aria-label="Удалить">×</button>
+    </div>
+  </div>`;
+}
+
+function topFavs(limit) {
+  const active = new Set(state.items.filter(i => !i.done).map(i => i.name.toLowerCase()));
+  return Object.values(state.history)
+    .filter(h => h.count >= 2 && !active.has(h.name.toLowerCase()))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+function renderList() {
+  $("title").textContent = "Покупки";
+  const active = state.items.filter(i => !i.done);
+  const done = state.items.filter(i => i.done);
+  const parts = [];
+  if (active.length) parts.push(active.length + " " + plural(active.length, "осталось", "осталось", "осталось"));
+  if (done.length) parts.push(done.length + " в корзине");
+  $("sub").textContent = parts.join(" · ");
+
+  const view = $("view");
+  if (!state.items.length) {
+    const favs = topFavs(8);
+    view.innerHTML = `<div class="empty">${ICON_BAG}
+      <h3>Список пуст</h3>
+      <p>Нажмите + чтобы добавить товар</p>
+      ${favs.length ? `<div class="chips">${favs.map(h =>
+        `<button class="chip fav" data-name="${esc(h.name)}" data-qty="${esc(h.qty || "")}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`).join("")}</div>` : ""}
+    </div>`;
     return;
   }
-  const total = bought.reduce((s, i) => s + (i.price || 0), 0);
-  const noPrice = bought.filter(i => i.price == null).length;
-  askModal("Итог покупки, лей", noPrice
-    ? "Посчитано по ценам, но у " + noPrice + " тов. цены нет — проверьте сумму"
-    : "Сумма за " + bought.length + " тов. — можно исправить", "Сумма, лей", "decimal", v => {
-    const sum = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
-    if (isNaN(sum) || sum < 0) return;
-    state.trips.push({
-      date: new Date().toISOString(),
-      sum,
-      items: bought.map(i => ({ name: i.name, qty: i.qty, price: i.price != null ? i.price : null }))
-    });
-    state.items = state.items.filter(i => !i.done);
-    save(); render();
-    showTab("stats");
-  }, total ? +total.toFixed(2) : "");
-});
 
-/* ---------- Статистика ---------- */
+  let html = "";
+  for (const cat of CATS) {
+    const items = active.filter(i => (i.cat || "other") === cat.id);
+    if (!items.length) continue;
+    html += `<div class="g-title">${cat.name}</div>` + items.map(rowHtml).join("");
+  }
+  // старые товары с неизвестной категорией
+  const known = new Set(CATS.map(c => c.id));
+  const orphan = active.filter(i => !known.has(i.cat || "other"));
+  if (orphan.length) html += `<div class="g-title">Разное</div>` + orphan.map(rowHtml).join("");
+
+  if (done.length) {
+    const total = done.reduce((s, i) => s + (i.price || 0), 0);
+    html += `<div class="g-title">В корзине${total ? `<b>${num(total)} лей</b>` : ""}</div>` + done.map(rowHtml).join("");
+    html += `<button class="clear-btn" id="clearDone">Убрать отмеченные без сохранения</button>`;
+  }
+  view.innerHTML = html;
+}
+
+function renderSaved() {
+  $("title").textContent = "Мои списки";
+  const names = Object.keys(state.savedLists);
+  $("sub").textContent = names.length ? names.length + " " + plural(names.length, "список", "списка", "списков") : "";
+  let html = `<button class="btn-line" id="saveCur" ${state.items.length ? "" : "disabled"}>Сохранить текущий список</button>`;
+  if (!names.length) {
+    html += `<div class="empty" style="padding-top:60px">
+      <svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z" stroke-linejoin="round"/></svg>
+      <h3>Нет сохранённых списков</h3>
+      <p>Сохраните список, чтобы потом добавить его одним нажатием — например «На неделю»</p>
+    </div>`;
+  } else {
+    html += `<div style="margin-top:14px">` + names.map(n => {
+      const items = state.savedLists[n];
+      const preview = items.slice(0, 4).map(i => i.name).join(", ") + (items.length > 4 ? "…" : "");
+      return `<div class="nav-row saved-row" data-name="${esc(n)}">
+        <div class="n-main">
+          <div class="n-name">${esc(n)}</div>
+          <div class="n-sub">${items.length} ${plural(items.length, "товар", "товара", "товаров")} · ${esc(preview)}</div>
+        </div>
+        <span class="chev">›</span>
+      </div>`;
+    }).join("") + `</div>`;
+  }
+  $("view").innerHTML = html;
+}
+
 function renderStats() {
-  const el = $("statsView");
+  $("title").textContent = "Статистика";
+  const now = new Date();
+  $("sub").textContent = MONTHS[now.getMonth()] + " " + now.getFullYear();
   const trips = state.trips.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   if (!trips.length) {
-    el.innerHTML = `<div class="empty"><span class="emoji">📊</span>Пока нет данных.<br>Отметьте покупки, нажмите<br>«Завершить покупки» и введите сумму.</div>`;
+    $("view").innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6" stroke-linecap="round"/></svg>
+      <h3>Пока нет покупок</h3>
+      <p>Отметьте купленные товары и нажмите «Завершить покупку» — расходы появятся здесь</p>
+    </div>`;
     return;
   }
-  const now = new Date();
   const byMonth = {};
   for (const t of trips) {
     const d = new Date(t.date);
@@ -593,15 +668,16 @@ function renderStats() {
     byMonth[k].sum += t.sum;
     byMonth[k].count++;
   }
-  const curKey = now.getFullYear() + "-" + now.getMonth();
-  const cur = byMonth[curKey] || { sum: 0, count: 0 };
+  const cur = byMonth[now.getFullYear() + "-" + now.getMonth()] || { sum: 0, count: 0 };
+  const avg = cur.count ? cur.sum / cur.count : 0;
 
-  let html = `<div class="stat-card">
-    <div class="stat-month">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
-    <div class="stat-nums">
-      <div class="stat-num"><b>${fmtSum(cur.sum)} лей</b><span>потрачено<br>≈${eur(cur.sum)} € · ${uah(cur.sum)} грн</span></div>
-      <div class="stat-num"><b>${cur.count}</b><span>походов</span></div>
-      <div class="stat-num"><b>${cur.count ? fmtSum(cur.sum / cur.count) : 0} лей</b><span>средний чек<br>≈${cur.count ? eur(cur.sum / cur.count) : 0} € · ${cur.count ? uah(cur.sum / cur.count) : 0} грн</span></div>
+  let html = `<div class="hero">
+    <div class="big">${num(cur.sum)}<span>лей</span></div>
+    <div class="conv">${conv(cur.sum)}</div>
+    <div class="mini">
+      <div><b>${cur.count}</b><span>${plural(cur.count, "покупка", "покупки", "покупок")}</span></div>
+      <div><b>${num(avg, 0)} лей</b><span>средний чек</span></div>
+      <div><b>${eur(avg)} €</b><span>средний чек</span></div>
     </div>
   </div>`;
 
@@ -609,186 +685,70 @@ function renderStats() {
   let max = 0;
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const k = d.getFullYear() + "-" + d.getMonth();
-    const m = byMonth[k] || { sum: 0 };
+    const m = byMonth[d.getFullYear() + "-" + d.getMonth()] || { sum: 0 };
     max = Math.max(max, m.sum);
     cols.push({ lbl: MONTHS_S[d.getMonth()], sum: m.sum, cur: i === 0 });
   }
-  if (max > 0) {
-    html += `<div class="stat-card"><div class="stat-month" style="font-size:15px">Последние 6 месяцев</div><div class="bars">`;
-    for (const c of cols) {
-      const h = max ? Math.round(c.sum / max * 90) : 0;
-      html += `<div class="bar-col${c.cur ? " cur" : ""}">
-        <div class="bar-val">${c.sum ? fmtSum(c.sum) : ""}</div>
-        <div class="bar" style="height:${h}%"></div>
-        <div class="bar-lbl">${c.lbl}</div>
-      </div>`;
-    }
-    html += `</div></div>`;
-  }
-
-  html += `<div class="sec-label" style="padding-left:4px;margin-top:14px">История покупок</div><div class="card">`;
-  for (const t of trips.slice(0, 30)) {
-    const d = new Date(t.date);
-    const ds = d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
-    const names = t.items.map(it => typeof it === "string" ? it : it.name);
-    html += `<div class="trip" data-date="${t.date}">
-      <div>
-        <div class="trip-date">${ds}</div>
-        <div class="trip-info">${names.length} тов.: ${esc(names.slice(0, 3).join(", "))}${names.length > 3 ? "…" : ""}</div>
-      </div>
-      <span class="trip-sum">${fmtSum(t.sum)} лей<div class="trip-eur">≈${eur(t.sum)} € · ${uah(t.sum)} грн</div></span>
-      <button class="del" aria-label="Удалить">×</button>
+  html += `<div class="chart"><div class="bars">` + cols.map(c => {
+    const h = max ? Math.max(3, Math.round(c.sum / max * 80)) : 3;
+    return `<div class="bar-col${c.cur ? " cur" : ""}">
+      <div class="bar-val">${c.sum ? num(c.sum, 0) : ""}</div>
+      <div class="bar" style="height:${h}%"></div>
+      <div class="bar-lbl">${c.lbl}</div>
     </div>`;
-  }
-  html += `</div>`;
-  el.innerHTML = html;
-}
+  }).join("") + `</div></div>`;
 
-$("statsView").addEventListener("click", e => {
-  const row = e.target.closest(".trip");
-  if (!row) return;
-  if (e.target.closest(".del")) {
-    askModal("Удалить запись?", "Напишите «да» для удаления", "да", "text", v => {
-      if (v.toLowerCase() === "да") {
-        state.trips = state.trips.filter(t => t.date !== row.dataset.date);
-        save(); renderStats();
-      }
-    });
-    return;
-  }
-  const trip = state.trips.find(t => t.date === row.dataset.date);
-  if (trip) showTrip(trip);
-});
-
-/* ---------- Детали покупки ---------- */
-function showTrip(t) {
-  const d = new Date(t.date);
-  $("tripTitle").textContent = "Покупка " + d.getDate() + " " + MONTHS_S[d.getMonth()] + " " + d.getFullYear();
-  $("tripTotal").textContent = fmtSum(t.sum) + " лей · ≈" + eur(t.sum) + " € · " + uah(t.sum) + " грн";
-  $("tripItems").innerHTML = t.items.map(it => {
-    const name = typeof it === "string" ? it : it.name;
-    const qty = (typeof it === "object" && it.qty) ? " · " + it.qty : "";
-    const pr = (typeof it === "object" && it.price != null) ? fmtSum(it.price) + " лей" : "—";
-    return `<div class="tr-item"><span>${esc(name)}${esc(qty)}</span><span class="tr-price">${pr}</span></div>`;
+  html += `<div class="g-title">История</div>` + trips.slice(0, 50).map(t => {
+    const items = tripItems(t);
+    const preview = items.slice(0, 3).map(i => i.name).join(", ") + (items.length > 3 ? "…" : "");
+    return `<div class="nav-row trip-row" data-date="${t.date}">
+      <div class="n-main">
+        <div class="n-name">${fmtDate(t.date)}</div>
+        <div class="n-sub">${items.length} ${plural(items.length, "товар", "товара", "товаров")} · ${esc(preview)}</div>
+      </div>
+      <div class="n-right">
+        <div class="n-sum">${num(t.sum)} лей</div>
+        <div class="n-conv">${eur(t.sum)} € · ${uah(t.sum)} грн</div>
+      </div>
+    </div>`;
   }).join("");
-  $("tripOverlay").classList.add("show");
+  $("view").innerHTML = html;
 }
-$("tripClose").addEventListener("click", () => $("tripOverlay").classList.remove("show"));
-$("tripOverlay").addEventListener("click", e => {
-  if (e.target === $("tripOverlay")) $("tripOverlay").classList.remove("show");
-});
 
-/* ---------- Вкладки ---------- */
-function showTab(which) {
-  const isList = which === "list";
-  $("listView").style.display = isList ? "" : "none";
-  $("addBar").style.display = isList ? "" : "none";
-  $("statsView").style.display = isList ? "none" : "block";
-  $("tabList").classList.toggle("sel", isList);
-  $("tabStats").classList.toggle("sel", !isList);
-  if (!isList) renderStats();
-}
-$("tabList").addEventListener("click", () => showTab("list"));
-$("tabStats").addEventListener("click", () => showTab("stats"));
+/* ---------- Клики по содержимому ---------- */
+let suppressClick = false;
 
-/* ---------- Рендер списка ---------- */
-function render() {
-  const total = state.items.length;
-  const left = state.items.filter(i => !i.done).length;
-  $("counter").textContent = total ? (left ? "осталось: " + left : "всё куплено ✓") : "";
+$("view").addEventListener("click", e => {
+  if (suppressClick) return;
 
-  const doneItems = state.items.filter(i => i.done);
-  $("finishBtn").disabled = !doneItems.length;
-  const runTotal = doneItems.reduce((s, i) => s + (i.price || 0), 0);
-  $("finishBtn").textContent = runTotal ? "✓ Завершить · " + fmtSum(runTotal) + " лей" : "✓ Завершить покупки";
-
-  const names = Object.keys(state.savedLists);
-  $("savedWrap").style.display = names.length ? "" : "none";
-  $("savedRow").innerHTML = names.map(n =>
-    `<button class="chip" data-name="${esc(n)}">📋 ${esc(n)} <span class="chip-x">×</span></button>`
-  ).join("");
-
-  const activeNames = new Set(state.items.filter(i => !i.done).map(i => i.name.toLowerCase()));
-  const favs = Object.values(state.history)
-    .filter(h => h.count >= 2 && !activeNames.has(h.name.toLowerCase()))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
-  $("favWrap").style.display = favs.length ? "" : "none";
-  $("favs").innerHTML = favs.map(h =>
-    `<button class="chip" data-name="${esc(h.name)}" data-qty="${esc(h.qty)}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`
-  ).join("");
-
-  const listEl = $("list");
-  if (!total) {
-    listEl.innerHTML = `<div id="empty"><span class="emoji">🛒</span>Список пуст.<br>Добавьте первую покупку ниже.</div>`;
+  const fav = e.target.closest(".fav");
+  if (fav) {
+    addItem(fav.dataset.name, fav.dataset.qty, fav.dataset.cat);
+    render();
     return;
   }
-  let html = "";
-  for (const cat of CATS) {
-    const items = state.items.filter(i => i.cat === cat.id);
-    if (!items.length) continue;
-    items.sort((a, b) => a.done - b.done);
-    html += `<div class="cat-title">${cat.icon} ${cat.name}</div><div class="card">`;
-    for (const i of items) {
-      html += `<div class="item${i.done ? " done" : ""}" data-id="${i.id}">
-        <button class="check" aria-label="Отметить">${i.done ? "✓" : ""}</button>
-        <span class="item-name">${esc(i.name)}</span>
-        ${i.qty ? `<span class="qty">${esc(i.qty)}</span>` : ""}
-        ${i.price != null ? `<button class="qty price">${fmtSum(i.price)} лей</button>` : (i.done ? `<button class="qty price">цена?</button>` : "")}
-        <button class="del" aria-label="Удалить">×</button>
-      </div>`;
-    }
-    html += `</div>`;
+  if (e.target.closest("#clearDone")) {
+    state.items = state.items.filter(i => !i.done);
+    save(); render();
+    return;
   }
-  const doneCount = state.items.filter(i => i.done).length;
-  if (doneCount) html += `<button id="clearDone">Убрать купленное без учёта (${doneCount})</button>`;
-  listEl.innerHTML = html;
-}
+  if (e.target.closest("#saveCur")) { saveCurrent(); return; }
 
-function renderCats() {
-  $("cats").innerHTML =
-    `<button class="cat-btn${selCat === null ? " sel" : ""}" data-cat="">✨ Авто</button>` +
-    CATS.map(c =>
-      `<button class="cat-btn${selCat === c.id ? " sel" : ""}" data-cat="${c.id}">${c.icon} ${c.name}</button>`
-    ).join("");
-}
+  const sr = e.target.closest(".saved-row");
+  if (sr) { openSaved(sr.dataset.name); return; }
 
-$("addBtn").addEventListener("click", doAdd);
-$("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
-$("qtyInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+  const tr = e.target.closest(".trip-row");
+  if (tr) {
+    const t = state.trips.find(x => x.date === tr.dataset.date);
+    if (t) openTrip(t);
+    return;
+  }
 
-function doAdd() {
-  const name = $("nameInput").value;
-  const qty = $("qtyInput").value.trim();
-  if (!name.trim()) { $("nameInput").focus(); return; }
-  addItem(name, qty, selCat);
-  $("nameInput").value = "";
-  $("qtyInput").value = "";
-  $("nameInput").focus();
-}
-
-$("cats").addEventListener("click", e => {
-  const b = e.target.closest(".cat-btn");
-  if (!b) return;
-  selCat = b.dataset.cat || null;
-  renderCats();
-});
-
-$("favs").addEventListener("click", e => {
-  const b = e.target.closest(".chip");
-  if (!b) return;
-  addItem(b.dataset.name, b.dataset.qty, b.dataset.cat);
-  b.classList.add("added");
-});
-
-$("list").addEventListener("click", e => {
-  if (e.target.closest("#clearDone")) { clearDone(); return; }
-  const row = e.target.closest(".item");
-  if (!row) return;
-  const id = parseFloat(row.dataset.id);
-  if (e.target.closest(".del")) { remove(id); return; }
-  if (e.target.closest(".price")) {
+  const w = e.target.closest(".sw");
+  if (!w) return;
+  const id = parseFloat(w.dataset.id);
+  if (e.target.closest(".r-x")) { removeWithUndo(id); return; }
+  if (e.target.closest(".r-price")) {
     const it = state.items.find(i => i.id === id);
     if (it) askPrice(it);
     return;
@@ -796,7 +756,276 @@ $("list").addEventListener("click", e => {
   toggle(id);
 });
 
-renderCats();
+/* ---------- Свайп для удаления ---------- */
+let sw = null;
+$("view").addEventListener("touchstart", e => {
+  const w = e.target.closest(".sw");
+  if (!w) return;
+  const t = e.touches[0];
+  sw = { w, row: w.querySelector(".row"), x: t.clientX, y: t.clientY, dx: 0, dir: null };
+}, { passive: true });
+
+$("view").addEventListener("touchmove", e => {
+  if (!sw) return;
+  const t = e.touches[0];
+  const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+  if (!sw.dir && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) sw.dir = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+  if (sw.dir !== "h") return;
+  e.preventDefault();
+  sw.dx = Math.min(0, dx);
+  sw.row.style.transition = "none";
+  sw.row.style.transform = "translateX(" + sw.dx + "px)";
+}, { passive: false });
+
+function endSwipe() {
+  if (!sw) return;
+  const s = sw; sw = null;
+  if (s.dir !== "h") return;
+  suppressClick = true;
+  setTimeout(() => { suppressClick = false; }, 350);
+  s.row.style.transition = "";
+  if (s.dx < -90) {
+    s.row.style.transform = "translateX(-100%)";
+    setTimeout(() => removeWithUndo(parseFloat(s.w.dataset.id)), 180);
+  } else {
+    s.row.style.transform = "";
+  }
+}
+$("view").addEventListener("touchend", endSwipe);
+$("view").addEventListener("touchcancel", endSwipe);
+
+/* ---------- Шторка добавления ---------- */
+let selCat = null;
+
+function renderAddSheet() {
+  $("cats").innerHTML =
+    `<button class="chip${selCat === null ? " sel" : ""}" data-cat="">Авто</button>` +
+    CATS.map(c => `<button class="chip${selCat === c.id ? " sel" : ""}" data-cat="${c.id}">${c.name}</button>`).join("");
+  const favs = topFavs(12);
+  $("favBlock").style.display = favs.length ? "" : "none";
+  $("favs").innerHTML = favs.map(h =>
+    `<button class="chip" data-name="${esc(h.name)}" data-qty="${esc(h.qty || "")}" data-cat="${h.cat}">+ ${esc(h.name)}</button>`
+  ).join("");
+}
+
+function openAdd() {
+  selCat = null;
+  $("nameInput").value = "";
+  $("qtyInput").value = "";
+  renderAddSheet();
+  $("addBg").classList.add("show");
+  $("addSheet").classList.add("show");
+  $("nameInput").focus();
+}
+function closeAdd() {
+  $("addBg").classList.remove("show");
+  $("addSheet").classList.remove("show");
+  document.activeElement && document.activeElement.blur();
+}
+
+function doAdd() {
+  const name = $("nameInput").value.trim();
+  if (!name) { $("nameInput").focus(); return; }
+  addItem(name, $("qtyInput").value.trim(), selCat);
+  $("nameInput").value = "";
+  $("qtyInput").value = "";
+  selCat = null;
+  renderAddSheet();
+  render();
+  toast("Добавлено: " + name);
+  $("nameInput").focus();
+}
+
+$("fab").addEventListener("click", openAdd);
+$("addBg").addEventListener("click", closeAdd);
+$("addClose").addEventListener("click", closeAdd);
+$("addBtn").addEventListener("click", doAdd);
+$("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+$("qtyInput").addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+$("cats").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  selCat = b.dataset.cat || null;
+  renderAddSheet();
+});
+$("favs").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  addItem(b.dataset.name, b.dataset.qty, b.dataset.cat);
+  toast("Добавлено: " + b.dataset.name);
+  renderAddSheet();
+  render();
+});
+
+/* ---------- Шторка просмотра ---------- */
+function openInfo(title, sub, bodyHtml, actions) {
+  $("infoTitle").textContent = title;
+  $("infoSub").textContent = sub;
+  $("infoBody").innerHTML = bodyHtml;
+  const box = $("infoActions");
+  box.innerHTML = "";
+  actions.forEach(a => {
+    const b = document.createElement("button");
+    b.className = "btn " + a.cls;
+    b.textContent = a.text;
+    b.addEventListener("click", a.fn);
+    box.appendChild(b);
+  });
+  $("infoBg").classList.add("show");
+  $("infoSheet").classList.add("show");
+}
+function closeInfo() {
+  $("infoBg").classList.remove("show");
+  $("infoSheet").classList.remove("show");
+}
+$("infoBg").addEventListener("click", closeInfo);
+
+function openSaved(name) {
+  const items = state.savedLists[name];
+  if (!items) return;
+  const body = items.map(i =>
+    `<div class="ir"><span>${esc(i.name)}</span><span>${esc(i.qty || "")}</span></div>`).join("");
+  openInfo(name, items.length + " " + plural(items.length, "товар", "товара", "товаров"), body, [
+    { text: "Удалить", cls: "danger", fn: () => {
+      dialog({ title: "Удалить список?", sub: "«" + name + "» будет удалён", ok: "Удалить", danger: true }, () => {
+        delete state.savedLists[name];
+        save(); closeInfo(); render();
+        toast("Список удалён");
+      });
+    }},
+    { text: "Добавить в покупки", cls: "primary", fn: () => {
+      items.forEach(i => addItem(i.name, i.qty, i.cat));
+      closeInfo();
+      setTab("list");
+      toast("Добавлено " + items.length + " " + plural(items.length, "товар", "товара", "товаров"));
+    }}
+  ]);
+}
+
+function saveCurrent() {
+  if (!state.items.length) return;
+  dialog({
+    title: "Сохранить список",
+    sub: "Например: «На неделю», «Шашлыки»",
+    input: { placeholder: "Название", mode: "text" },
+    ok: "Сохранить"
+  }, name => {
+    if (!name) return;
+    state.savedLists[name] = state.items.map(i => ({ name: i.name, qty: i.qty, cat: i.cat }));
+    save(); render();
+    toast("Список «" + name + "» сохранён");
+  });
+}
+
+function openTrip(t) {
+  const items = tripItems(t);
+  const body = items.map(i =>
+    `<div class="ir"><span>${esc(i.name)}${i.qty ? `<small>${esc(i.qty)}</small>` : ""}</span><span>${i.price != null ? num(i.price) + " лей" : "—"}</span></div>`
+  ).join("");
+  openInfo("Покупка " + fmtDate(t.date), num(t.sum) + " лей · " + conv(t.sum), body, [
+    { text: "Удалить", cls: "danger", fn: () => {
+      dialog({ title: "Удалить запись?", sub: "Сумма уйдёт из статистики", ok: "Удалить", danger: true }, () => {
+        state.trips = state.trips.filter(x => x.date !== t.date);
+        save(); closeInfo(); render();
+        toast("Запись удалена");
+      });
+    }},
+    { text: "Закрыть", cls: "ghost", fn: closeInfo }
+  ]);
+}
+
+/* ---------- Завершение покупки ---------- */
+$("finishBtn").addEventListener("click", () => {
+  const bought = state.items.filter(i => i.done);
+  if (!bought.length) return;
+  const total = bought.reduce((s, i) => s + (i.price || 0), 0);
+  const noPrice = bought.filter(i => i.price == null).length;
+  dialog({
+    title: "Итог покупки",
+    sub: noPrice
+      ? "У " + noPrice + " " + plural(noPrice, "товара", "товаров", "товаров") + " нет цены — проверьте сумму в леях"
+      : bought.length + " " + plural(bought.length, "товар", "товара", "товаров") + " · сумма в леях",
+    input: { placeholder: "0", mode: "decimal", preset: total ? +total.toFixed(2) : "" },
+    ok: "Сохранить"
+  }, v => {
+    const sum = parseNum(v);
+    if (isNaN(sum) || sum < 0) { toast("Введите сумму"); return; }
+    state.trips.push({
+      date: new Date().toISOString(),
+      sum,
+      items: bought.map(i => ({ name: i.name, qty: i.qty, price: i.price != null ? i.price : null }))
+    });
+    state.items = state.items.filter(i => !i.done);
+    save();
+    setTab("stats");
+    toast("Покупка сохранена");
+  });
+});
+
+/* ---------- Диалог ---------- */
+let dlgCb = null;
+function dialog(o, cb) {
+  $("dlgTitle").textContent = o.title;
+  $("dlgSub").textContent = o.sub || "";
+  $("dlgSub").style.display = o.sub ? "" : "none";
+  const inp = $("dlgInput");
+  if (o.input) {
+    inp.style.display = "";
+    inp.value = o.input.preset != null ? String(o.input.preset) : "";
+    inp.placeholder = o.input.placeholder || "";
+    inp.inputMode = o.input.mode || "text";
+  } else {
+    inp.style.display = "none";
+  }
+  $("dlgOk").textContent = o.ok || "Готово";
+  $("dlgOk").className = "btn " + (o.danger ? "red" : "primary");
+  $("dlgCancel").textContent = o.cancel || "Отмена";
+  dlgCb = { fn: cb, hasInput: !!o.input };
+  $("dlg").classList.add("show");
+  if (o.input) setTimeout(() => { inp.focus(); inp.select(); }, 60);
+}
+function closeDlg() {
+  $("dlg").classList.remove("show");
+  $("dlgInput").blur();
+}
+$("dlgCancel").addEventListener("click", () => { closeDlg(); dlgCb = null; });
+$("dlgOk").addEventListener("click", () => {
+  const c = dlgCb; dlgCb = null;
+  const v = $("dlgInput").value.trim();
+  closeDlg();
+  if (c && c.fn) c.fn(c.hasInput ? v : true);
+});
+$("dlgInput").addEventListener("keydown", e => { if (e.key === "Enter") $("dlgOk").click(); });
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) { closeDlg(); dlgCb = null; } });
+
+/* ---------- Тост ---------- */
+let toastTimer = null, toastAction = null;
+function toast(text, btnText, action) {
+  $("toastText").textContent = text;
+  $("toastBtn").textContent = btnText || "";
+  $("toastBtn").style.display = btnText ? "" : "none";
+  toastAction = action || null;
+  $("toast").classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), btnText ? 4000 : 1600);
+}
+$("toastBtn").addEventListener("click", () => {
+  const a = toastAction; toastAction = null;
+  $("toast").classList.remove("show");
+  if (a) a();
+});
+
+/* ---------- Клавиатура iOS: шторка над клавиатурой ---------- */
+if (window.visualViewport) {
+  const fit = () => {
+    const vv = window.visualViewport;
+    const off = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty("--kb", off + "px");
+  };
+  window.visualViewport.addEventListener("resize", fit);
+  window.visualViewport.addEventListener("scroll", fit);
+}
+
 render();
 </script>
 </body>
